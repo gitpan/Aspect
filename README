@@ -57,38 +57,26 @@ INSTALLATION
     documentation.
 
 CHANGES AND FUTURE DEVELOPMENT
-    This `README' refers to version 0.06. For details of changes, refer to
+    This `README' refers to version 0.07. For details of changes, refer to
     the file `Changes'.
 
     Future versions will provide new types of join points, pointcuts and
     modular aspects. Stability and performance is also an ongoing concern.
     See `Aspect::Ideas' for an overview of these ideas.
 
-CHANGES IN VERSION 0.06
-    *   added `around()' function to `Aspect'
-
-    *   Added `Attribute::Profiled'
-
-    *   added `Aspect::Attribute' interface to creating advice
-
-    *   made `Aspect::Advice''s `enable()' and `disable()' return `$self'
-
-    *   added cookbook example callflow_attr.pl
-
-    *   added cookbook recipes for bounds checking and change tracking, plus
-        sample programs
+CHANGES IN VERSION 0.07
+    *   Symbols exported from Aspect.pm now don't generate join points. So I
+        added `Aspect::import()' and modified `Aspect::JoinPoint::enum()' to
+        check for `%Aspect::exp_syms'.
 
 AVAILABILITY
-    `Aspect' has been uploaded to the CPAN; in any case it is available
-    from:
-
-      http://codewerk.unixbeard.net/aspects/Aspect-0.06.tar.gz
+    `Aspect' has been uploaded to the CPAN.
 
 AUTHOR
-    Marcel Grunauer, <marcel@codewerk.com>
+    Marcel Grünauer <marcel.gruenauer@chello.at>
 
 COPYRIGHT
-    Copyright 2001 Marcel Grunauer. All rights reserved.
+    Copyright 2001 Marcel Grünauer. All rights reserved.
 
     This library is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

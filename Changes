@@ -1,8 +1,13 @@
 Revision history for Perl extension Aspect.
 
+0.07  Fri Mar 15 09:04:51 CET 2002
+	- symbols exported from Aspect.pm now don't generate join points.
+	  So I added Aspect::import() and modified Aspect::JoinPoint::enum()
+	  to check for %Aspect::exp_syms.
+
 0.06  Fri Oct 26 16:42:51 CEST 2001
 	- added around() function to Aspect.pm
-	- added Attribute::Profiled
+	- added Aspect::Profiled
 	- added Aspect::Attribute interface to creating advice
 	- made Aspect::Advice's enable() and disable() return $self
 	- added cookbook example program callflow_attr.pl

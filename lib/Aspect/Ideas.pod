@@ -37,20 +37,14 @@ further development.
 An obvious example of a development aspect is tracing the program
 flow. See C<Aspect::Trace>.
 
-=item Profiling Aspects
-
-(This means aspects for profiling, not the profiling of aspects,
-although that would be worthwhile as well.)
-
-Count invocations of a subroutine; benchmark subroutines (cf.
-Attribute::Profiled).
-
 =item Design-by-contract
 
 Implement design-by-contract pre- and postconditions using aspects,
 cf. C<Class::Contract>.
 
 =item Default Variable I/O
+
+Per Sub::Underscore.
 
 This sets up a wrapper for a sub that takes a scalar as an argument and
 returns a scalar. The wrapper calls the sub with C<$_> if no argument
@@ -369,11 +363,11 @@ Check AOSD 2002: http://trese.cs.utwente.nl/aosd2002.htm.
 
 =head1 AUTHOR
 
-Marcel Grunauer, <marcel@codewerk.com>
+Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel Grunauer. All rights reserved.
+Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

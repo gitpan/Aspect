@@ -6,7 +6,7 @@ use base 'Aspect::PointCut';
 use Class::MethodMaker
     get_set => [ qw/leftop rightop/ ];
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub init {
 	my ($self, $leftop, $rightop) = @_;

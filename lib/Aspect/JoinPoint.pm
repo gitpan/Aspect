@@ -6,7 +6,7 @@ use Aspect::JoinPoint::Call;
 use Aspect::JoinPoint::Return;
 use Aspect::Symbol::Enum qw(get_user_packages get_CODE);
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub init {}    # might be useful in a subclass
 
@@ -28,6 +28,12 @@ sub enum {
 	for my $pkg (@pkg) {
 		for my $sub (get_CODE($pkg)) {
 			my $sym = $pkg . '::' . $sub;
+
+			# subs that have been exported from Aspect.pm
+			# don't provide join points; that's not the
+			# expected default behavior. See Aspect::import().
+
+			next if exists $Aspect::exp_syms{$sym};
 			push @jp =>
 			    Aspect::JoinPoint::Call->new($sym),
 			    Aspect::JoinPoint::Return->new($sym);
@@ -116,11 +122,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel Grunauer, <marcel@codewerk.com>
+Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel Grunauer. All rights reserved.
+Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

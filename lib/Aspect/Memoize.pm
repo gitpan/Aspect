@@ -5,7 +5,7 @@ use Class::MethodMaker
     get_set => 'spec';
 use Aspect qw(advice calls returns);
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub define {
 	my ($self, $spec) = @_;
@@ -156,11 +156,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel Grunauer, <marcel@codewerk.com>
+Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel Grunauer. All rights reserved.
+Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

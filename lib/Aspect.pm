@@ -18,7 +18,37 @@ our %EXPORT_TAGS = ( all => [ qw(
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
+
+sub import {
+	# When enumerating join points with Aspect::JoinPoint::enum(),
+	# we want to skip those associated with symbols exported from
+	# Aspect.pm, since it's not the expected default behavior to
+	# have calls() and returns() work on those as well.
+
+	# To do so, we override Exporter's import() method. We remember
+	# all exported symbols and the package we've exported them
+	# to in a global hash, which we check each symbol against in
+	# Aspect::JoinPoint::enum() before generating join points.
+	# We look at the symbol the caller asks us to export and also
+	# expand tags (e.g., ':all' would be expanded to whatever is
+	# defined in $EXPORT_TAGS{all}).
+
+	# Then we call Exporter::import(), but telling it to export
+	# to a package one higher than normal, as we are Exporter::import()'s
+	# caller now.
+
+	# Bit tricky, but no more so than the whole concept of
+	# Hook::LexWrap and Aspect taken together, so that's ok.
+
+	my $callpkg = caller;
+	our %exp_syms;
+	$exp_syms{ $callpkg . '::' . $_ } = 1 for
+		map { /^:(.*)/ ? @{ $EXPORT_TAGS{$1} || [] } : $_ } @_[1..$#_];
+
+	$Exporter::ExportLevel = 1;
+	Exporter::import(@_);
+}
 
 # if the first argument isn't a pointcut object, make it a calls()
 # pointcut, the most common one
@@ -205,11 +235,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel Grunauer, <marcel@codewerk.com>
+Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel Grunauer. All rights reserved.
+Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
