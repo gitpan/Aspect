@@ -19,9 +19,6 @@
 
 * need a way to match subs that have not been imported in to a package
 
-* improve Test::Class aspect- allow for test method to decide UIT
-  construction params
-
 IDEAS
 
 * design aspects: DBC, threading, GOF patterns

@@ -1,5 +1,4 @@
 require 5.008002;
-
 use ExtUtils::MakeMaker;
 
 print <<EOWARN;
@@ -14,7 +13,7 @@ WriteMakefile(
 	ABSTRACT      => 'AOP for Perl',
 	VERSION_FROM  => 'lib/Aspect.pm',
 	AUTHOR        => 'Ran Eilam <eilara@cpan.org>',
-	dist          => { COMPRESS => 'gzip --force --best' },
+	dist          => {COMPRESS => 'gzip --force --best'},
 	PREREQ_PM     => {
 		Test::Class      => 0.06_5,
 		Devel::Symdump   => 2.03,

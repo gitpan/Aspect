@@ -6,10 +6,9 @@ use Carp;
 use Aspect::Hook::LexWrap;
 use Devel::Symdump;
 
-my %Core_Packages = map { $_ => 1 } qw(
-	attributes base fields lib strict warnings Carp Config CORE
-	CORE::GLOBAL DB DynaLoader Exporter Exporter::Heavy IO IO::Handle
-	UNIVERSAL
+my %UNTOUCHABLES = map { $_ => 1 } qw(
+	attributes base fields lib strict warnings Carp Carp::Heavy Config CORE
+	CORE::GLOBAL DB DynaLoader Exporter Exporter::Heavy IO IO::Handle UNIVERSAL
 );
 
 sub new { bless {}, shift }
@@ -18,7 +17,7 @@ sub get_sub_names {
 	# TODO: need to filter Aspect exportable functions!
 	map  { Devel::Symdump->new($_)->functions }
 	grep { !/^Aspect::/ }
-	grep { !$Core_Packages{$_} }
+	grep { !$UNTOUCHABLES{$_} }
 	Devel::Symdump->rnew->packages;
 }
 

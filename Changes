@@ -1,5 +1,12 @@
 Revision history for Perl extension Aspect.
 
+0.09_3 Wed Jul 6 2004
+
+    - Added Carp::Heavy to list of untouchables in Weaver.pm,
+      to avoid Carp dumping core
+    - Test::Class aspect allows for customizing IUT through
+      init_subject_state
+
 0.09_2 Sat Mar 6 2004
 
     - AdviceContext now has the original code, so you can do
