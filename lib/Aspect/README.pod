@@ -87,15 +87,31 @@ Future versions will provide new types of join points, pointcuts
 and modular aspects. Stability and performance is also an ongoing
 concern. See C<Aspect::Ideas> for an overview of these ideas.
 
-=head1 CHANGES IN VERSION 0.07
+=head1 CHANGES IN VERSION 0.08
 
 =over 4
 
 =item *
 
-Symbols exported from Aspect.pm now don't generate join points.
-So I added C<Aspect::import()> and modified C<Aspect::JoinPoint::enum()>
-to check for C<%Aspect::exp_syms>.
+The distribution has been adapted for use with perl5.8.0. C<Hook::LexWrap>
+is now a core module, but there was a problem with context (wantarray)
+handling with Aspect::Memoize.
+
+Sorry about the perl 5.6.x users, but this is bleeding-edge stuff, so
+you're expected to use the very latest gear. Anyway, you can still get an
+earlier version (up to 0.07) from CPAN, which will work with perl 5.6.x.
+
+=item *
+
+C<Aspect::Memoize> is now intended for subroutines returning scalars
+only. That is, if the sub is called in list context, it will still only
+memoize, and return, a memoized scalar. Void context obviously doesn't
+matter when it comes to memoization; subroutines returning lists are
+something I have to think about.
+
+=item *
+
+Tests now use C<Test::More>.
 
 =back
 
@@ -105,11 +121,11 @@ C<Aspect> has been uploaded to the CPAN.
 
 =head1 AUTHOR
 
-Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
+Marcel GrE<uuml>nauer <marcel@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
+Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

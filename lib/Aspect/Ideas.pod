@@ -363,11 +363,11 @@ Check AOSD 2002: http://trese.cs.utwente.nl/aosd2002.htm.
 
 =head1 AUTHOR
 
-Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
+Marcel GrE<uuml>nauer <marcel@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
+Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,10 +1,23 @@
 package Aspect::PointCut::Calls;
 
+# $Id: Calls.pm,v 1.3 2002/07/31 21:29:19 marcelgr Exp $
+#
+# $Log: Calls.pm,v $
+# Revision 1.3  2002/07/31 21:29:19  marcelgr
+# changed version number to 0.08
+#
+# Revision 1.2  2002/07/31 21:03:23  marcelgr
+# changed e-mail address; other changes for version 0.08
+#
+# Revision 1.1.1.1  2002/06/13 07:17:54  marcelgr
+# initial import
+#
+
 use strict;
 use warnings;
 use base 'Aspect::PointCut::Sub';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub join_point_type { 'Aspect::JoinPoint::Call' }
 
@@ -65,11 +78,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
+Marcel GrE<uuml>nauer <marcel@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
+Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

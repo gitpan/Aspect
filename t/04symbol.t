@@ -3,19 +3,16 @@
 use warnings;
 use strict;
 use lib qw(lib ./t/testlib);
-use Test;
-use Aspect::Symbol::Enum ':all';
-
-BEGIN { plan tests => 10 }
+use Test::More tests => 10;
+BEGIN { use_ok('Aspect::Symbol::Enum', ':all') }
 
 sub foo {}
 sub bar {}
 sub baz {}
 
-ok(1);  # loaded ok
 my @u = get_user_packages;
-ok(grep /^$_$/ => @u) for qw/main Test Test::Harness/;
+ok(grep(/^$_$/ => @u), "$_ is a user package") for qw/main Test Test::Harness/;
 
 my @c = get_CODE('main');
-ok(grep /^$_$/ => @c)
+ok(grep(/^$_$/ => @c), "$_ is a main:: CODE symbol")
     for qw/foo bar baz get_CODE get_code get_user_packages/;

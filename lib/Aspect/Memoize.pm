@@ -1,11 +1,34 @@
 package Aspect::Memoize;
 
+# $Id: Memoize.pm,v 1.4 2002/07/31 21:29:16 marcelgr Exp $
+#
+# $Log: Memoize.pm,v $
+# Revision 1.4  2002/07/31 21:29:16  marcelgr
+# changed version number to 0.08
+#
+# Revision 1.3  2002/07/31 21:03:13  marcelgr
+# changed e-mail address; other changes for version 0.08
+#
+# Revision 1.2  2002/07/31 07:56:38  marcelgr
+# Adapted for perl5.8.0's Hook::LexWrap. Damian must have changed context
+# handling, so the memoization aspect didn't work when a sub was called
+# in array context one time and scalar context another time. So at the
+# moment the memoization aspect is for subs returning one scalar only.
+# Also rewrote t/06memoize.t to use Test::More and made that module a
+# prerequisite in Makefile.PL (not really necessary as we require 5.8.0
+# anyway.)
+# (Documentation of the memoization manpage pending.)
+#
+# Revision 1.1.1.1  2002/06/13 07:17:54  marcelgr
+# initial import
+#
+
 use base 'Aspect::Modular';
 use Class::MethodMaker
     get_set => 'spec';
 use Aspect qw(advice calls returns);
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub define {
 	my ($self, $spec) = @_;
@@ -18,6 +41,7 @@ sub define {
 	    advice(calls($spec), sub {
 		my $argcode = join $;,@_[0..$#_-1];
 		my $sub = $::thisjp->sub;
+
 		$_[-1] = $Aspect::Memoize::cache{$sub}{$argcode}
 		    if defined $Aspect::Memoize::cache{$sub}{$argcode};
 		push @{ $Aspect::Memoize::argstack{$sub} } => $argcode;
@@ -26,7 +50,7 @@ sub define {
 		my $sub = $::thisjp->sub;
 		my $argcode = pop @{ $Aspect::Memoize::argstack{$sub} };
 		$Aspect::Memoize::cache{$sub}{$argcode}
-		    = wantarray ? @{$_[-1]} : $_[-1];
+		    = wantarray ? $_[-1][0] : $_[-1];
 	    }),
 	);
 	$self->enable;
@@ -156,11 +180,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
+Marcel GrE<uuml>nauer <marcel@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
+Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

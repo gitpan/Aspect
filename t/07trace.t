@@ -3,18 +3,17 @@
 use warnings;
 use strict;
 use lib qw(lib ./t/testlib);
-use Test;
+use Test::More tests => 3;
 use IO::Scalar;
-use Aspect qw(advice calls returns);
-use Aspect::Trace;
 
-BEGIN { plan tests => 2 }
+BEGIN {
+	use_ok('Aspect', qw(advice calls returns));
+	use_ok('Aspect::Trace');
+}
 
 sub foo { 1 }
 sub bar { (2, 3) }
 sub baz { 5 }
-
-ok(1);  # loaded ok
 
 my $bar = foo(6);
 () = bar(7,8);
@@ -42,7 +41,7 @@ foo(9);
 baz(10);
 
 my $expected = do { local $/; <DATA> };
-ok($result eq $expected);
+is($result, $expected, 'expected trace result');
 
 __END__
 call main::foo(6) in scalar context

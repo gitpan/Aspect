@@ -1,0 +1,464 @@
+<unimatrix> btw, after you mentioned aspect-oriented programming yesterday i started reading up on aspectj and the transwarp thing. unless i miss something, it's really simple (conceptually).
+<acme> unimatrix: oh. okay then: in one sentence, explain aop to perl programmers
+<unimatrix> not in one sentence...
+<unimatrix> but sometimes there are things you have to do to loads of classes, but which you can't put in a class itself.
+<unimatrix> such as tracing
+<unimatrix> what if you want to print a line every time a sub is entered?
+<unimatrix> you could litter the code with print statements, but that's error prone, and you have to undo it
+<unimatrix> it was an extremely simple example.
+<unimatrix> what if you could say "every time you enter a sub called "new", print this line"?
+<unimatrix> that's what they call "crosscutting concerns"
+<unimatrix> so you need to define points during execution where you can do something. they call that "join points"
+<unimatrix> e.g. when a sub is entered, exited, when an assignment happens etc
+<unimatrix> then you define sets of such join points, like "all subs starting with 'get_' in modules Data::*" (this could use regexes to define them). they call this "pointcuts"
+<unimatrix> then you say what you want to do when you get to a point during execution that corresponds to a pointcut. this is called "advice"
+<unimatrix> you can specify that something should happen before reaching a join point, after, or around.
+<unimatrix> memoizing could be implemented that way.
+<unimatrix> or enforcing that an object is a singleton.
+<unimatrix> anyway, that's my understanding of aspects for code. but they also talk about aspects for design, which i need to read about.
+<acme> this really needs language/compiler support, doesn't it
+<unimatrix> to be efficient, yes.
+<unimatrix> but i thought about how to implement (as a proof of concept) aspects using the perl debugger, which does give you the chance to intercept all sorts of things
+<unimatrix> no talk about performance here, just to show a concept.
+<unimatrix> you know, the way DB::sub is called every time a sub is entered.
+<unimatrix> programmatic breakpoints.
+<acme> right
+<unimatrix> with aspects you could also programmatically model design patterns (to a certain degree)
+<unimatrix> it's basically stuff that affects several classes
+<unimatrix> another potentially useful thing is Hook::WrapSub, but that only lets you wrap specific code around one specific sub. it doesn't come close to join points or pointcuts.
+<unimatrix> a bit more than two sentences, and i hope i haven't got it completely wrong.
+<unimatrix> but i think that perl is flexible enough to at least let you test that concept
+<acme> cool. now, is it useful (in Perl)?
+<unimatrix> i think it's useful, but to be of real use in production, there would have to be support from the language, and, of course, at runtime. using the debugger and doing pattern-matching after each statement isn't the right way to go about it, but atm the only way i can think of.
+<acme> have you actually tried the debugger approach?
+<unimatrix> hey, acme, you only mentioned it yesterday. hadn't heard about it before.e
+<acme> heh
+<unimatrix> to a certain degree you could do a *few* things at compile time, so the runtime effect isn't so big. but that wouldn't be true aspects.
+* acme captures the irc log so he can think about it later
+* acme nods
+* acme reads /perldebguts
+<unimatrix> me too...
+<unimatrix> i can't even get a simple debugger to work :(
+<acme> i've looked at the profilers, but they work with smoke and mirrors afaics
+<unimatrix> this line in perldebguts, that says   sub sub {print ++$i, " $sub\n"; &$sub}   just doesn't work for me. where does $sub come from? a special variable within the debugger?
+<unimatrix> acme: got that example to work. it should be clarified in perldebguts...
+<acme> yeah. needs to be better
+<unimatrix> encouraged by success, our intrepid heroes follow the path into deeper recesses of the debugger...
+<acme> crap. there are no more examples
+<unimatrix> ok, so it's nearly trivial to do something whenever a sub is entered and exited. now we can define some 'advice' examples and test for them at enter/exit sub.
+<unimatrix> you could always try to read perl5db.pl ...
+<unimatrix> that's a big example
+* acme was doing just that...
+<acme> unimatrix: hey, this is really doable. i just need a good example, now...
+<unimatrix> how about pooling efforts?
+<unimatrix> is there somewhere we can work on this together?
+<acme> errr, sourceforge? [but there's a four-hour delay doing anything ;-]
+<unimatrix> exactly.
+<acme> unimatrix: cd /home/projects/aop; perl -d:AOP primes.pl
+<unimatrix> acme: right.
+<unimatrix> i also tried to figure out how to call other subs within DB::sub.
+* acme nods
+<unimatrix> easy, it turns out:
+<unimatrix> cf. test.pl
+<unimatrix> erm...
+<unimatrix> oh. ~projects/test.pl
+<acme> right
+<acme> can the debugger be turned on inside a perl program? [ie can this ever be useful?]
+* acme slaps head. sorry. hashbangline
+<unimatrix> hm. wasn't there something about a $H or $W flag or so?
+* unimatrix checks
+<unimatrix> $^P is set if in the debugger
+<unimatrix> don't think this is bidirectional, though
+<unimatrix> heh.    BEGIN { exec "$^X -d $0" unless $^P }
+* unimatrix ducks
+<acme> hmmm
+<acme> so what simple examples can we do?
+<unimatrix> i thought the idea is not to code DB::sub explicitly, but to put the logic somewhere else
+<unimatrix> so we need to (kind of) fire an event before &$sub and one after. interested listeners can then do their stuff.
+<acme> ooooh, i see events
+<unimatrix> so it'd be good if we could just use the aop module and specify what we want to do before entering a sub, e.g. print it's name.
+<unimatrix> yes, but in the interest of not making this completely sluggish maybe we shouldn't use some OO-based event scheme
+<acme> unimatrix: go ahead, mate ;-)
+<unimatrix> ok; the debugger, when the program starts, notes which kinds of join points (for lack of a better word) are available
+<unimatrix> richardc: we're not debugging; we're hijacking the debugger for something else
+<unimatrix> in our case, these would be entersub and exitsub.
+* acme nods
+<unimatrix> then, when giving "advice" on these join points (let's deal with pointcuts later), we attach coderefs to these join points.
+<unimatrix> when a join point is reached, e.g. in DB::sub, the coderefs are executed.
+<acme> right, there may be many, but _they_ decide if they do somethingelse first/after
+<unimatrix> hm
+<unimatrix> there'd have to be an expression that decides whether this particular coderef should get executed (e.g.   $sub =~ /^get/  ) and the coderef to be executed.
+<unimatrix> they get pushed onto a stack associated with the join point
+<unimatrix> when the join point is reached, the stack is processed and for every expr matching the sub, the coderef is executed.
+<acme> unimatrix: would a regex always suffice?
+<unimatrix> hm. i suppose a coderef would.
+<unimatrix> maybe it could test a regex if it is one, or run the coderef if not.
+<unimatrix> but this means more processing in the advice dispatcher (nice word).
+* acme notes that this is very DWIM and quite like Switch.pm
+<acme> (simple things first, though)
+<unimatrix> right. i'm using %DB::advice to store the advice,
+<unimatrix> then set up the DB::* stuff in a BEGIN block
+<unimatrix> that also makes entries into %advice for keys "entersub" and "exitsub".
+* acme nods
+<unimatrix> now, outside the BEGIN block, we want to define the logic
+<unimatrix> i'm copying the file to ~projects/aop/advice.pl as i go along
+<acme> (pair programming over the net, hmmm)
+<acme> sms from simon: "So Much Totty. Phule."
+* unimatrix can see acme weighing "totty" against "cool hack"
+<acme> this is much better
+<unimatrix> :)
+<acme> the totty will always be there. the cool hacks are, well, cool
+<acme> i can Memoization being an easy application
+<acme> night
+* unimatrix forgets references
+<unimatrix> what's wrong with aop/advice.pl  line 20?
+<acme> errr, should be fine
+<acme> nonnono
+<unimatrix> right, but perl -c seems to think otherwise
+<acme>  for my $advice { @{ $advice{entersub} } } {
+<acme>  for my $advice ( @{ $advice{entersub} } ) {
+<unimatrix> shit
+<unimatrix> :)
+<unimatrix> ETOOMANYBRACES
+<acme> should it be $code->($sub, @_)  if $sub =~ $test; ?
+<acme> (so you know what it was called)?
+<unimatrix> yes, but there's another problem
+<unimatrix> it don't work
+<unimatrix> ah
+<unimatrix> maybe should call DB::advice at some point...
+<acme> hey DrHyde. we're doing scary stuff
+<unimatrix> yay
+<unimatrix> check aop/advice.pl
+<acme> yah
+<acme> yay
+<unimatrix> now we prettify it
+<DrHyde> acme: so am I :-) most of it involving breaking my network
+<unimatrix> the advice dispatcher should probably be a separate routine
+* acme nods
+<unimatrix> well, that was pretty easy. what now?
+<acme> how about a memoization helper?
+<acme> trying aspect oriented programming in perl
+<unimatrix> by hijacking the debugger
+<unimatrix> er... it's a somewhat long-winded explanation.
+<unimatrix> best to read aspectj.org
+<unimatrix> or i'll make the irc log into a short description of aop for perl hackers
+<unimatrix> http://www.codewerk.f2s.com/tmp/aop.irc.txt  # that may or may not help...
+* acme notes that his primes script runs ~10x slower under the debugger :-(
+<unimatrix> hm. quantum aspects...
+<acme> lol
+<acme> hmmmm. you know, perl6 _should_ really be able to do this...
+* acme downloads aspectj to see how they've implemented it
+<unimatrix> there are problems with return values.
+<unimatrix> just calling &$sub in DB::sub discards the return values, so we could capture them in an array.
+<acme> right: they can say 'i want to act on a method called foo, but only if it's in the control flow of bar 
+<unimatrix> but then context would be lost and could have an adverse effect of how &$sub is processed
+<unimatrix> yes, cflow() is a bit more tricky... :)
+<unimatrix> pointcuts, later.
+<acme> unimatrix: eek
+<unimatrix> i wonder how the debugger handles context. i.e. when it enters DB::sub can you find out how the &$sub should be called?
+<unimatrix> sounds like a lot of testing, but maybe stuff for a little paper
+<acme> unimatrix: see DB::dump_trace(skip[, count])
+<acme> in perldebguts
+<unimatrix> cool!
+<acme> handy, eh?
+<unimatrix> suddenly perldebguts seems to make sense
+<acme> i hate it when that happens ;-)
+<unimatrix> sooo... we need to find out which context the sub was called in, then supply it when actually calling the sub, then return the results?
+<unimatrix> inconvenient
+<acme> how about callingit in the right context?
+<unimatrix> all this processing even though we might not even be interested in that sub
+<unimatrix> sure, but to do that we need to find out the context first, then call it in that context
+<unimatrix> how about a shortcut that doesn't do any of this stuff if there is no advice for it?
+<unimatrix> and just executes the sub
+<acme> hmmm
+<unimatrix> btw, the example in perldebguts doesn't seem to take care of context either  sub sub {print ++$i, " $sub\n"; &$sub}  
+<unimatrix> gotta try this simple debugger with context-sensitive subs
+* acme checks perl5db.pl
+<acme> hmmm, doesn't goto &NAME do the right thing?
+<unimatrix> yes, but does it return?
+<unimatrix> that would substitute the sub, and returning from it would return from DB::sub, right?
+<acme> yeeesss
+<unimatrix> well, the simple debugger from perldebguts behaves ok, i think
+<unimatrix> so &$sub at the end of DB::sub is ok, but probably not in the middle
+<acme> right
+<acme> right
+* acme slowly understands aspectj
+<unimatrix> new insights?
+<acme> no, but the examples are useful
+<acme> of course, to do this properly, we'd need Parse::Perl ;-)
+<unimatrix> thought about it; wouldn't help either, since you need to do this at runtime to detect when it returns from a sub
+<unimatrix> but P::P wouldn't hurt
+<acme> oh, yep
+<acme> perl's too godarned dynamic! ;-p
+<unimatrix> yep, you just gotta love a language that gives you so much insight into its guts. like with dump_trace.
+<acme> i don't think introductions make as much sense in perl as they do in java
+<acme> AOP is kinda restricted in java as it's more static... hmmm
+<acme> changing the join points during the run...
+<unimatrix> advice.pl is getting more and more buggy.
+<unimatrix> :q
+<unimatrix> oops
+<acme> and let me guess, you're getting more and more tired?
+<unimatrix> yup
+<unimatrix> i think i don't understand dump_trace.
+<acme> oh
+<unimatrix> in main, i call    $x = x1(), but dump trace returns an empty list.
+<acme> *oh*
+<unimatrix> it's pretty messy by now, but if you want to have a look... run advice.pl
+<unimatrix> it should say "ENTERING main::x1", then   $VAR=[].  
+<unimatrix> that $VAR=[]  comes from Dumping \@ccc, which is dump_trace(0,1).
+<acme> bah, it'll all look clearer in the morning
+<acme> so AOP is only useful if you have good OO code, hmmm
+<unimatrix> not necessarily... you know, this would be a lot easier if we could physically work together. like at a conference. or somewhere in london.
+<acme> are you coming for the next london.pm? that's quite far away though
+<unimatrix> i try, but it *is* far away. i'll try to be in london from thursday till sunday.
+<acme> i need to stay in london atm, company and all that
+<unimatrix> it's going well, i hope?
+<acme> still chasing our first work...
+<acme> (they keep delaying the planning meeting)
+* acme must finish planning XP before that ;-)
+<unimatrix> do you think XP isn't just a fad or buzzword (no trolling, i really don't know)?
+<acme> some of it makes sense. i still think it's a cult, though
+<acme> it basically goes together really well with perl if you
+<acme> a) test test test
+<acme> b) "only do the minimum amount necessary" ie don't go overboard
+<acme> i'm not sure about the pair programming: i think having bright people around you is prolly enough
+<acme> mstevens: how's the, *cough*, cv?
+<mstevens> acme: cv looking reasonable, still  haven't waved it at anyone
+<acme> dipsy?
+<dipsy> acme?
+<acme> dipsy, brian's code graphs is at http://www.panix.com/~comdog/Articles/graphviz.html
+--- acme has changed the topic to: GraphViz in DDJ: ask dipsy about brian's code graphs
+<acme> dipsy, brian's code graphs?
+<acme> dipsy, graphing perl is acme's favourite talk
+<acme> dipsy, graphing perl is also at http://www.astray.com/graphing_perl/
+<dipsy> okay, acme.
+<acme> so we can't set up the debugger on the fly? this limits the usefulness?
+<unimatrix> we can still do quite a bit, i think.
+<unimatrix> once we get that *BLOODY CONTEXT* sorted out
+<acme> can't think. need sleep. will think tomorrow.
+<unimatrix> i think dump_trace (and print_trace) doesn't tell you about the current sub; it tells you about the sub's stack. bummer
+<acme> unimatrix: right
+<unimatrix> ok, slaap lekker
+<unimatrix> er.
+<unimatrix> good night
+<acme> but caller() can tell you, then?
+<unimatrix> but not context.
+<acme> ooooh yes it can
+<unimatrix> yes?
+<unimatrix> hm
+<acme> with EXPR
+* unimatrix reads perldoc -f caller
+<acme> i fear this'll have to be in DB::DB, not DB::sub and that we'll have to pass this around
+<unimatrix> my brain has turned to slush
+<unimatrix> ok, maybe later today. but i have to go to the company to do some firefighting. might get some time, though.
+<unimatrix> night
+--> unimatrix (~marcel@62.116.66.156) has joined #london.pm
+--- Topic for #london.pm set by acme at Sat Mar 17 01:17:29 2001
+--- slavorg gives channel operator status to unimatrix
+<unimatrix> cause it's ugly and convoluted? pod is supposed to be simple. it's not docbook, but it will get the job done for most things
+<unimatrix> hi gellyfish
+<unimatrix> POD is simple to read, though.
+<unimatrix> a browser
+<unimatrix> dipsy, feel free to shut up
+* unimatrix 046 enters grid 318 node 722
+* unimatrix identifies the machine as species 4217
+* acme hands around Guinness
+--- acme is now known as O`Acme
+--- You are now known as stpatrix
+<stpatrix> hi O'Acme
+<O`Acme> top of the day to you
+<stpatrix> aspects, i tell you...
+<O`Acme> doh! wantarray just works
+<stpatrix> advice.pm (which should really be Aspects.pm) works ok, but once you get into it... it's an abyss
+<stpatrix> yes, KISS.
+<stpatrix> simple explanations...
+<stpatrix> i thought about pointcuts. looked at the aspectj source and didn't find out very much.
+<stpatrix> but to make them arbitrarily complex they should probably be nested coderefs. like closures blessed into certain packages.
+<stpatrix> e.g. calls('main::x1') might return a closure blessed into Aspect::Pointcut::Calls.
+<stpatrix> then you combine the pointscuts to more complex ones.
+<stpatrix> but a pointcut is only interesting if there is advice (code) associated with it. so when you define advice on a pointcut, there must be some sort of registry so DB::sub (or whoever services certain join points) knows which pointcut/advice pairs to check
+<stpatrix> is this even remotely making sense?
+<O`Acme> no. this is probably because i still need to completely figure out pointcuts
+<stpatrix> well, a join point might be "entering a sub", which we called entersub. but to programmatically build complex patterns, aspectj uses "calls(mysubname)" to define this join point.
+<stpatrix> so we can pass this concept of "do something when mysubname is called" around, we call this a pointcut and give it a name.
+<O`Acme> aha
+<stpatrix> let's call this pointcut "callmysub". now we define advice on this pointcut:
+<stpatrix> advice($callmysub, sub { ...what we want to do... })
+<stpatrix> but now we want to make this more specific and say:
+<stpatrix> process my advice only if there are calls to mysubname() *and* if called, directly or indirectly, by mywrapper().
+<stpatrix> so we could define a new pointcut:
+<stpatrix> $p2 = $callmysub && cflow('mywrapper');    # or so
+<stpatrix> with appropriate overloading of '&&'
+<stpatrix> this would generate a more complex pointcut
+<O`Acme> errr, you can't overload && so it'll have to be & but yes, i get it
+<stpatrix> so far so good.
+<stpatrix> this could be implemented with nested objects, like AndOp->new(CallJoinPoint->new('mysubname'), CFlow->new('wrapper'));
+<O`Acme> right. which does the right thing
+<stpatrix> processing the topmost node would determine whether this pointcut is appropriate for the current execution point (e.g., before calling &$sub in DB::sub)
+<stpatrix> but!
+<O`Acme> stpatrix: got Advice.pm working without warnings (renamed it Devel::Advice and called it appropriately) and fixed a global destruction bug for you ;-)
+<stpatrix> good! I'm sshing to penderel...
+<stpatrix> but how do you know which pointcuts to process without doing the whole shebang at every little opportunity_
+<O`Acme> it currently doesn't propagate @INC, so you'll have to run the example as example/advice.pl though
+<O`Acme> stpatrix: errr, you can't, surely
+<stpatrix> ooh
+<stpatrix> excellent
+<stpatrix> right. how about pointcuts registering themselves for certain types of join points_
+* stpatrix tries to find the question mark on this fscking german keyboard
+<stpatrix> i mean, if DB::sub wants to process advice to give before a sub is called, then it's not interested in pointcuts having something to do with variable assignments
+<O`Acme> wahey, @INC now propagates
+<stpatrix> so in the above example, DB::sub would want to know about that pointcut, because CallJoinPoint plays a role.
+<stpatrix> cool. that first BEGIN block is still a dirty hack, though... whatever.
+<stpatrix> hey, if nothing else comes from this, we'll have learned a bit about the debugger
+<O`Acme> rename dir to Advice-0.02 so you can now play
+<O`Acme> perhaps generic memoization / tracing should be the next step?
+<stpatrix> hang on, shouldn't we define the join points/pointcut concept first before doing an actual implementation of an aspect?
+<O`Acme> ok
+<stpatrix> i mean, we can do it with how it stands, but the mechanism probably would be all wrong
+<stpatrix> so the tree of ops and join point objects as indicated above might be a good idea, right?
+* O`Acme nods and hands over the virtual keyboard
+<stpatrix> but do we have to query all pointcuts associated with advice before every single statement?
+<O`Acme> should you be able to change pointcuts on the fly?
+<stpatrix> dunno. sure it'd be cool but it depends on what we want to achieve with the whole thing.
+<stpatrix> what do we want to achieve?
+<O`Acme> if not, you could install pre and post handler for a sub that has just matched with Hook::PrePostCall / Hook::WrapSub whatever
+<stpatrix> i see
+<O`Acme> (and then remember not to do anything for that case of the sub, so i'm not sure it'll help much)
+<stpatrix> what about more complex pointcuts where it depends on cflow, for example? you'd have to check the call stack in those pre/post handlers as well. might get complicated
+<stpatrix> especially if you define several pointcuts where this sub plays a role
+<O`Acme> aha. good point. looks like you actually have to do all the work
+* O`Acme wonders how aspectj does it
+<stpatrix> and AUTOLOADed subs? i assume they could be intercepted with DB::sub, but maybe not with wrapsub
+<stpatrix> if you can make sense of the gazillion aspectj classes, let me know :)
+<O`Acme> oh god. talk about a project that needs technical docs
+<stpatrix> mhm.
+<stpatrix> hm. first i thought an advice dispenser could remember which pointcuts were interesting for it, kinda memoize it, but that could change because of dynamic context, i.e. cflow.
+<stpatrix> <caveat>the following may not make sense, i'm just typing as i think</caveat>. Maybe the tree needs to be processed bottom-up. defining a pointcut using calls() makes an entry into some hash that keeps an index into all calls() pointcuts. when constructing a complex pointcut, it's underlying parts have a pointer to the parent, so they know which more complex pointcuts they're parts of. then when the time comes (DB::sub), only the calls() pointcuts need to be processed, and for those that return true, processing needs to propagate up the tree. when reaching the top node of a pointcut tree and it's still, ok, then evaluate the whole pointcut tree (all branches).
+<stpatrix> so pointcuts consisting of cflows and variable-assignment-join-points aren't processed at all
+<O`Acme> oh
+<O`Acme> i think that makes sense
+<stpatrix> actually, the entry into the lookup hash only needs to be made when advice is associated with a pointcut, not at the time the pointcut is defined.
+<stpatrix> but this goes into optimization, not actually functionality. we could just traverse all pointcut trees regardless, in the first try. just to see whether that tree concept works.
+* O`Acme nods
+<O`Acme> oooh: AOP in ruby: http://groups.google.com/groups?q=aspect+oriented+programming+ruby&hl=en&lr=&safe=off&rnum=3&seld=934327313&ic=1
+<O`Acme> dipsy, AOP in ruby is at http://groups.google.com/groups?q=aspect+oriented+programming+ruby&hl=en&lr=&safe=off&rnum=3&seld=934327313&ic=1
+<stpatrix> what's with the #{...} things? templates? variables?
+<stpatrix> anyway, this sounds more like a simple sub wrapper
+<O`Acme> yeah
+<O`Acme> stpatrix: variable interpolation
+<stpatrix> gosh
+<stpatrix> the simple implementation of pointcuts works
+<stpatrix> uhm, the source is getting a bit fragmented. i really need to bring in your modifications and tidy it all up
+<stpatrix> O'Acme?
+<O`Acme> hey, cool
+<stpatrix> look in aop/marcel2.
+<stpatrix> i think i need to talk you through this cause its not obvious where to start
+<stpatrix> PointCut.pm defines a basic pointcut. It is subclassed by PointCut::Calls and PointCut::OrOp
+<stpatrix> they build a tree. Calls is a leaf and accepts a test (literal, regex or code)
+<stpatrix> OrOp constructs a node binding a leftop and rightop
+<stpatrix> when trying to match for a given context (in a certain point of execution), the advice dispenser calls matches() on all registered advice's pointcuts (we'll get to that shortly) and that tries to match against the context
+<stpatrix> in the case of the Calls pointcut, it tries to match the sub name embedded in the context (which atm is just a hash, but should be an object) against the test with which it has been defined.
+<stpatrix> an OrOp is true if either of its ops is true (note that OrOp::matches inherits from perl's shortcut boolean ops)
+<stpatrix> now in examples/pointcut.pl we define a pointcut.
+<stpatrix> at the moment explicitly, but that can be wrapped into syntactic sugar using overload.
+<stpatrix> you need to call it from the examples/ directory
+<stpatrix> btw, this doesn't have your patch in it yet
+<O`Acme> oh, right. it's quite simple then
+<stpatrix> now, in Aspect.pm (no longer Advice.pm), we just process the advice and hand it the context
+<stpatrix> proc_advice tries to match each registered advice and calls the advice's code if it matches
+<stpatrix> now it might be simple to implement cflow by including the call stack in the context and having CFlow::matches() try to match the test against one of the call frames
+<O`Acme> hmmm. it's Almost Too Easy
+<stpatrix> dontcha love OOP? The price is performance. But hey, this is proof-of-concept.
+<O`Acme> want me to add my patches to that source?
+<stpatrix> no, i'm just doing that, thanks
+<O`Acme> 'k
+<stpatrix> maybe we should put this under cvs rsn?
+<O`Acme> cvs doesn't work well when you're moving things aorund all the time, but yeah
+<O`Acme> does penderel have cvs?
+<stpatrix> i know...
+<O`Acme> shall i apply for another sourceforge project?
+<stpatrix> well, if CVS doesn't help cause we're moving stuff round, the sf might not either
+<stpatrix> maybe we oughta wait for the structure to become a bit more stable?
+<O`Acme> we probably should
+<stpatrix> speaking of moving around, i'd like to be able to say in a program   use Aspect ':all' and then construct pointcuts with   my $p1 = calls('x'); my $p2 = $p1 & cflow('y')
+<stpatrix> so I'll change module names and locations and exports to enable that
+<O`Acme> cvs will help - we can bother develop at the same time. shall i register aspect-perl?
+<stpatrix> on sourceforge? well, we can register the project and developers, but i'll upload when i've got this all sorted out
+<O`Acme> "Your project has been submitted to the SourceForge admininstrators
+<stpatrix> i never did a project on sourceforge...
+<O`Acme> stpatrix: it's easy. just register and i'll add you later on
+<stpatrix> what's your login name there?
+<stpatrix> just to get an idea for what to choose
+<O`Acme> stpatrix: acme of course ;-)
+<stpatrix> well, i chose unimatrix in the end
+<stpatrix> can't confirm the mail though, as i need to be at home for that. cable provider only lets you access the pop account from within its subnet.
+<stpatrix> and the home machine is switched off
+<O`Acme> doh
+<O`Acme> http://sourceforge.net/users/acme/
+<O`Acme> i have id, you have id 175872
+<O`Acme> 649 ;-)
+<stpatrix> i have 175872?
+<stpatrix> how do you know?
+<O`Acme> http://sourceforge.net/users/unimatrix/
+<stpatrix> oh
+<O`Acme> have i really been a member since last century? gosh
+<stpatrix> i'm chasing bugs and adding pointcuts for returns (i.e. exit from sub) and andop
+<stpatrix> but first, some wine. (i know, on st patrick's day...)
+* O`Acme registers graphviz-perl while he's at it
+* O`Acme relaxes with his PS2 for a bit
+<O`Acme> stpatrix: cool, project approved. will take a while for dns to update though :-(
+<stpatrix> neat
+<stpatrix> i have a little problem here:
+<stpatrix> i'm using dump_trace again. but when calling the program without -d, using our BEGIN { exec ... unless $^P } trick, it still has to parse. at this point debugger support hasn't been loaded, so it doesn't find dump_trace and complains. i.e. it doesn't even get to the begin block
+<stpatrix> quite apart from the fact that cflow doesn't work exactly as intended...
+<stpatrix> hm. backtrace. it shouldn't even use Devel::Aspect unless it was called with -d:Aspect...
+<stpatrix> hm
+<stpatrix> cool!
+<stpatrix> i didn't fix the problem, but instead of dump_trace i made do with caller(); now cflow() seems to work
+<O`Acme> stpatrix: cool
+<stpatrix> scary. overloading works as well, so you can say  calls('main::y1') | cflow('main::x1')
+<stpatrix> next, some module aspect behaviours. like memoize.
+<baud> hmm, can anyone explain aspect oriented programming to me in little words?
+<stpatrix> er.
+<itz> perldoc perltoot
+<stpatrix> aspect, not object
+<O`Acme> perldoc perlaopt ;-)
+<stpatrix> http://www.codewerk.f2s.com/tmp/aop.irc.txt
+<stpatrix> initial discussion yesterday
+<baud> got a word wrapped version of that? :-)
+<stpatrix> O'Acme: i really need to make this into a faq (aop for japhs)
+<baud> well they're talking about Aspects over in Cocoon land recently.
+* O`Acme nods
+<stpatrix> baud: no surprise there. it's written in java; they say aspectj doesn't have a huge impact on performance, so...
+<stpatrix> aspects is the new black
+<baud> aspectj is pre-processed, thats why.
+<baud> if you did it with perl filters it wouldn't have a performance hit either
+<stpatrix> well, filters can only do certain things. they can't detect when you return from a sub
+<baud> hmm.
+<stpatrix> unless you wrap that sub statically, but then you lose with dynamic pointcuts like cflow()
+<baud> unless you wrap it
+<stpatrix> baud: do you have an insight into how aspectj works under the hood?
+<baud> none at all
+<baud> except that it pre-processes the java code
+<baud> of course that's easier in Java, because a return requires an explicit statement
+<baud> (well in a way it does in Perl too)
+<stpatrix> well, what we're trying to do is create a proof-of-concept that it *could* work if there was proper language support. maybe there could be some sort of preprocessing, but that's another issue (may have to do that with a compiler backend).
+<stpatrix> to do so (and by the way enable even changing aspects at runtime) we hijack the debugger
+<stpatrix> which happens to call DB::DB before every statement and DB::sub before every sub. that's where we process pointcuts and advice and act on them if necessary
+<stpatrix> all very slow, but it seems to work
+<stpatrix> and to think that this is possible in a few hours work...
+<O`Acme> (compared to hundreds of class files for aspectj ;-)
+<baud> cool.
+<baud> I think I understand them now - thanks!
+<vorsprung> thanks for the info on ascept programming
+<vorsprung> aspect even
+<vorsprung> it's a kinda odd idea
+<vorsprung> i suppose it is like a meta version of the GoF patterns
+<stpatrix> it is, but it's also true that sometimes there these crosscutting concerns, and there's no easy way to package them into another class.
+<stpatrix> and even if there was, you'd still have to inherit from that class explicitly.
+<vorsprung> most of them are trying to do stuff like that
+<stpatrix> actually, it should be possible to implement a few patterns using aspects
+<baud> the cocoon guys have been saying that XSP taglibs are a bit like Aspects. Now I understand what aspects means I'll have to go back and read why they think that :-)
+<stpatrix> so with aspects you can force certain behaviour on a class or set of classes. and you can reuse those standard worker classes and add and remove behaviours as needed without having to change the worker classes
+<stpatrix> O'Acme: Aspect-0.03 on aop
+<stpatrix> check examples/pointcut.pl

@@ -1,5 +1,18 @@
 package Aspect;
 
+# $Id: Aspect.pm,v 1.3 2002/07/31 21:29:14 marcelgr Exp $
+#
+# $Log: Aspect.pm,v $
+# Revision 1.3  2002/07/31 21:29:14  marcelgr
+# changed version number to 0.08
+#
+# Revision 1.2  2002/07/31 21:02:23  marcelgr
+# changes for version 0.08
+#
+# Revision 1.1.1.1  2002/06/13 07:17:54  marcelgr
+# initial import
+#
+
 use strict;
 use warnings;
 use base 'Exporter';
@@ -11,14 +24,14 @@ use Aspect::PointCut::OrOp;
 use Aspect::PointCut::AndOp;
 use Aspect::PointCut::NotOp;
 
+our $VERSION = '0.08';
+
 our %EXPORT_TAGS = ( all => [ qw(
 	advice calls returns or_op and_op not_op
 	around
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our $VERSION = '0.07';
 
 sub import {
 	# When enumerating join points with Aspect::JoinPoint::enum(),
@@ -73,7 +86,7 @@ __END__
 
 =head1 NAME
 
-Aspect - Convenience functions to set up aspects
+Aspect - Even more rope to hang yourself
 
 =head1 SYNOPSIS
 
@@ -235,11 +248,11 @@ author.
 
 =head1 AUTHOR
 
-Marcel GrE<uuml>nauer <marcel.gruenauer@chello.at>
+Marcel GrE<uuml>nauer <marcel@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright 2001 Marcel GrE<uuml>nauer. All rights reserved.
+Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
