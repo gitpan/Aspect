@@ -1,0 +1,57 @@
+=head1 NAME
+
+Aspect-Oriented Perl Cookbook - recipes for common situations
+
+=head1 DESCRIPTION
+
+This cookbook contains recipes for using aspect-oriented techniques
+to solve common problems.
+
+=head1 Tracing the call flow
+
+=head2 Problem
+
+You want to see how subroutines call each other while your program
+is running.
+
+=head2 Solution
+
+Suppose you want to see the call flow for subroutines within the
+C<Foo> package:
+
+  my $adv1 = advice(calls(qr/^Foo::/), sub {
+    $::indent++;
+    print ' ' x ($::indent - 1), $::thisjp->signature(@_), "\n"
+  });
+  my $adv2 = advice(returns(qr/^Foo::/), sub { $::indent-- });
+
+  $_->enable for $adv1, $adv2;
+
+=head2 Discussion
+
+Create a pointcut designating the call join points of the subroutines
+you're interested in; then another designating the return join
+points of those subroutines. Remember the call level by increasing
+a variable in the call advice, then decreasing it in the return
+advice. Output the desired information in the call advice.
+
+=head2 See Also
+
+The C<cookbook/01callflow.pl> example program.
+
+=head1 AUTHOR
+
+Marcel Grunauer, <marcel@codewerk.com>
+
+=head1 COPYRIGHT
+
+Copyright 2001 Marcel Grunauer. All rights reserved.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+Aspect::Intro(3pm), Aspect(3pm).
+
+=cut

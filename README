@@ -1,0 +1,88 @@
+NAME
+    Aspect-Oriented Perl - Aspect-oriented programming in pure Perl
+
+DESCRIPTION
+  Introduction to AOP
+
+    Aspect-oriented Programming (AOP) is a programming methodology developed
+    by Xerox PARC. The basic idea is that in complex class systems there are
+    certain aspects or behaviors that cannot normally be expressed in a
+    coherent, concise and precise way. One example of such aspects are
+    design patterns, which combine various kinds of classes to produce a
+    common type of behavior.
+
+    Aspects in Perl provide:
+
+    *   Dynamic enabling and disabling of aspects at run-time
+
+    *   Modular aspects for prepackaged functionality
+
+    See `Aspect::Intro' for an introduction to aspect-oriented programming.
+    See `Aspect::Overview' for an overview of the modules and classes that
+    comprise this distribution. See `Aspect::Ideas' for ideas on future
+    developments. See `Aspect::Cookbook' for aspect-oriented recipes for
+    common situations. See the individual modules' manpages for information
+    on how to use and implement aspects.
+
+LIMITATIONS
+    *   Many types of join points and pointcuts remain unimplemented.
+
+    *   Performance may suffer for aspects affecting a wide range of join
+        points.
+
+PREREQUISITES
+    `Aspect' requires the following modules, which can be obtained from
+    CPAN:
+
+      Class::MethodMaker
+      Hook::LexWrap
+      IO::Scalar
+
+    If you install `Aspect' from the CPAN shell, these modules will, if
+    necessary, be installed automatically as well.
+
+INSTALLATION
+    It's all pure Perl, so just put the .pm files in their appropriate local
+    Perl subdirectories.
+
+    The easiest way to install this distribution is using the standard build
+    process for Perl modules:
+
+      perl Makefile.PL
+      make
+      make test
+      make install
+
+    Or you could use the CPAN shell, as described in the `CPAN' module
+    documentation.
+
+CHANGES AND FUTURE DEVELOPMENT
+    This `README' refers to version 0.04. For details of changes, refer to
+    the file `Changes'.
+
+    Future versions will provide new types of join points, pointcuts and
+    modular aspects. Stability and performance is also an ongoing concern.
+    See `Aspect::Ideas' for an overview of these ideas.
+
+CHANGES IN VERSION 0.04
+    *   Added documentation
+
+AVAILABILITY
+    `Aspect' has been uploaded to the CPAN; in any case it is available
+    from:
+
+      http://codewerk.unixbeard.net/aspects/Aspect-0.04.tar.gz
+
+AUTHOR
+    Marcel Grunauer, <marcel@codewerk.com>
+
+COPYRIGHT
+    Copyright 2001 Marcel Grunauer. All rights reserved.
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+SEE ALSO
+    Aspect::Intro(3pm), Aspect::Cookbook(3pm), Aspect::Ideas(3pm),
+    Aspect(3pm).
+

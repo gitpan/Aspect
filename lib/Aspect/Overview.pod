@@ -1,0 +1,149 @@
+=head1 NAME
+
+Aspect Class Overview - Overview of Aspect classes and modules
+
+=head1 DESCRIPTION
+
+This document describes the modules and classes that make up the
+Aspect distribution.
+
+=head2 Documentation
+
+=over 4
+
+=item C<Aspect::Intro>
+
+Aspect-oriented programming in pure Perl
+
+=item C<Aspect::Ideas>
+
+New ideas for aspects-oriented Perl
+
+=item C<Aspect::Cookbook>
+
+Recipes for common situations
+
+=back
+
+=head2 Basic modules
+
+=over 4
+
+=item C<Aspect>
+
+Convenience functions to set up aspects
+
+=item C<Aspect::Advice>
+
+Object representing a pointcut and associated advice
+
+=back
+
+=head2 Join point modules
+
+=over 4
+
+=item C<Aspect::JoinPoint>
+
+Superclass for all types of join points
+
+=item C<Aspect::JoinPoint::Call>
+
+Class representing a call join point
+
+=item C<Aspect::JoinPoint::Return>
+
+Class representing a return join point
+
+=item C<Aspect::JoinPoint::Sub>
+
+Superclass for subroutine-based join points
+
+=back
+
+=head2 Pointcut modules
+
+=over 4
+
+=item C<Aspect::PointCut>
+
+Superclass for all types of pointcuts
+
+=item C<Aspect::PointCut::AndOp>
+
+XXX
+
+=item C<Aspect::PointCut::BinOp>
+
+XXX
+
+=item C<Aspect::PointCut::Calls>
+
+Represents a calls() pointcut operator
+
+=item C<Aspect::PointCut::NotOp>
+
+XXX
+
+=item C<Aspect::PointCut::OrOp>
+
+XXX
+
+=item C<Aspect::PointCut::Returns>
+
+XXX
+
+=item C<Aspect::PointCut::Sub>
+
+XXX
+
+=back
+
+=head2 Modular aspects
+
+=over 4
+
+=item C<Aspect::Modular>
+
+Base class for modular aspects
+
+=item C<Aspect::Memoize>
+
+Modular aspect to handle subroutine memoization
+
+=item C<Aspect::Singleton>
+
+Modular aspect to force singleton behavior on a class
+
+=item C<Aspect::Trace>
+
+Modular aspect to trace subroutine calls
+
+=back
+
+=head2 Utility modules
+
+=over 4
+
+=item C<Aspect::Symbol::Enum>
+
+Functions to extract symbol table information
+
+=back
+
+=head1 AUTHOR
+
+Marcel Grunauer, <marcel@codewerk.com>
+
+=head1 COPYRIGHT
+
+Copyright 2001 Marcel Grunauer. All rights reserved.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+the manpages of all the modules described above, of course.
+
+=cut

@@ -1,0 +1,24 @@
+Revision history for Perl extension Aspect.
+
+0.04  Mon Oct  1 18:33:00 CEST 2001
+	- removed the patched Hook::LexWrap now that 0.20 is out
+	  which fixes all the problems of 0.10
+	- added documentation (a recurring theme, never finishes)
+
+0.03  Sun Sep 30 19:43:56 CEST 2001
+	- added documentation
+	- Included a patched Hook::LexWrap that fixes a bug with
+	  wantarray preservation in subroutine wrappers. Will be
+	  removed if and when Damian approves of the patch or otherwise
+	  fixes the bug.
+
+0.02  Fri Sep 28 12:59:06 CEST 2001
+	- added documentation
+	- added '$::thisjp' global variable
+	- added modular memoization aspect: Aspect::Memoize
+	- added modular tracing aspect: Aspect::Trace
+
+0.01  Fri Sep 28 10:36:08 CEST 2001
+	- original version; created by h2xs 1.20 with options
+		-XAn Aspect
+
