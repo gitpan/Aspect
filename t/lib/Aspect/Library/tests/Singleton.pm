@@ -10,7 +10,7 @@ use base qw(Test::Class);
 
 my $Demo_Class = 'Aspect_Library_Singleton_Foo';
 
-sub aspect: Test(1) {
+sub aspect: Test {
 	my $self = shift;
 
 	my $aspect = Aspect::Library::Singleton->new

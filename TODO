@@ -19,6 +19,15 @@
 
 * need a way to match subs that have not been imported in to a package
 
+* use Scalar-Footnote for adding aspect state to objects, e.g. in
+  Listenable. Problem is it is still in developer release state
+
+* Listenable: when listeners go out of scope, they should be removed from
+  listenables
+
+* Listenable: should overload some operator on listenables so that it is 
+  easier to add/remove listeners
+
 IDEAS
 
 * design aspects: DBC, threading, GOF patterns

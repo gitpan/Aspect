@@ -1,5 +1,11 @@
 Revision history for Perl extension Aspect.
 
+0.10 Thu Jul 30 2004
+
+    - No longer a developer release
+    - Added Listenable reusable aspect
+    - Added subject_params() support for TestClass library aspect
+
 0.09_3 Wed Jul 6 2004
 
     - Added Carp::Heavy to list of untouchables in Weaver.pm,

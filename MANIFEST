@@ -14,6 +14,7 @@ lib/Aspect.pm
 lib/Aspect/Advice.pm
 lib/Aspect/AdviceContext.pm
 lib/Aspect/Hook/LexWrap.pm
+lib/Aspect/Library/Listenable.pm
 lib/Aspect/Library/Memoize.pm
 lib/Aspect/Library/Profiler.pm
 lib/Aspect/Library/Singleton.pm
@@ -34,6 +35,7 @@ MANIFEST.SKIP
 META.yml
 README
 t/all_tests.t
+t/lib/Aspect/Library/tests/Listenable.pm
 t/lib/Aspect/Library/tests/Singleton.pm
 t/lib/Aspect/Library/tests/Wormhole.pm
 t/lib/Aspect/Pointcut/tests/Call.pm

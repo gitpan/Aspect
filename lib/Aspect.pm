@@ -11,7 +11,7 @@ use Aspect::Pointcut::Cflow;
 
 use base 'Exporter';
 
-our $VERSION = '0.09_03';
+our $VERSION = '0.10';
 our @EXPORT  = qw(aspect before after call cflow);
 
 my (@Aspect_Store, @Advice_Store);
@@ -75,13 +75,13 @@ Aspect - AOP for Perl
   $pointcut = call qr/^Person::[gs]et_/; # defines a collection of events
 
   # advice will live as long as $before is in scope
-  $before = before { print "g/set will be called"  } $pointcut;
+  $before = before { print "g/set will soon be called"  } $pointcut;
 
   # advice will live forever, because it is created in void context 
-  after { print "g/set has been called" } $pointcut;
+  after { print "g/set has just been called" } $pointcut;
 
   before
-     { print "get will be called, if in the call flow of Tester::run_tests" }
+     { print "get will soon be called, if in call flow of Tester::run_tests" }
      call qr/^Person::get_/ & cflow tester => 'Tester::run_tests';
 
 =head1 DESCRIPTION

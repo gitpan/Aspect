@@ -10,7 +10,7 @@ use base qw(Test::Class);
 
 my $Demo_Prefix = 'Aspect_Library_Wormhole_';
 
-sub aspect: Test(1) {
+sub aspect: Test {
 	my $self = shift;
 
 	my $aspect = Aspect::Library::Wormhole->new

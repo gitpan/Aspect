@@ -3,8 +3,8 @@ use ExtUtils::MakeMaker;
 
 print <<EOWARN;
 
-This is alpha software. There have been massive API changes since last
-version. Please check README and Changes.
+There have been massive API changes since last release.
+Please check README and Changes.
 
 EOWARN
 
@@ -16,6 +16,7 @@ WriteMakefile(
 	dist          => {COMPRESS => 'gzip --force --best'},
 	PREREQ_PM     => {
 		Test::Class      => 0.06_5,
+		Test::Exception  => 0.15,
 		Devel::Symdump   => 2.03,
 		Benchmark::Timer => 0.5,
 	},

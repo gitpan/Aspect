@@ -60,9 +60,8 @@ INSTALLATION
 
 CHANGES AND FUTURE DEVELOPMENT
 
-   This README refers to version 0.09_02. The main change in this version
-   is the addition of cflow() pointcut, and the addition of a new
-   maintainer. See the Changes file for more details.
+   This README refers to version 0.10. This is the 1st non-developer
+   release since Marcel's last release.
 
    Future versions will provide new types of join points, pointcuts and
    modular aspects. Stability and performance is also an ongoing
@@ -72,7 +71,7 @@ AVAILABILITY
 
    Aspect has been uploaded to the CPAN.
 
-AUTHOR
+AUTHORS
 
    Marcel Grünauer <marcel@cpan.org>, Ran Eilam <eilara@cpan.org>
 

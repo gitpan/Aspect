@@ -16,7 +16,8 @@ sub get_advice {
 		my $context = shift;
 		my $self    = $context->self; # the Test::Class object
 		return unless is_test_method_with_subject($context);
-		my $subject = $self->make_subject;
+		my (@params) = $self->subject_params if $self->can('subject_params');
+		my $subject = $self->make_subject(@params);
 		$self->init_subject_state($subject) if $self->can('init_subject_state');
 		$context->append_param($subject);
 	} call qr/::[a-z][^:]*$/ & $pointcut;

@@ -29,6 +29,7 @@ BEGIN {
 		Aspect::tests::Advice
  		Aspect::Library::tests::Singleton
  		Aspect::Library::tests::Wormhole
+		Aspect::Library::tests::Listenable
 	);
 
 	my $thing = 'Aspect::'. ($ARGV[0] || '');
