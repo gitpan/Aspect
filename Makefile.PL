@@ -15,7 +15,7 @@ WriteMakefile(
 	AUTHOR        => 'Ran Eilam <eilara@cpan.org>',
 	dist          => {COMPRESS => 'gzip --force --best'},
 	PREREQ_PM     => {
-		Test::Class      => 0.06_5,
+		Test::Class      => 0.03,
 		Test::Exception  => 0.15,
 		Devel::Symdump   => 2.03,
 		Benchmark::Timer => 0.5,

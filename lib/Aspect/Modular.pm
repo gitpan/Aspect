@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Carp;
 
+our $VERSION = '0.10';
+
 # creating --------------------------------------------------------------------
 
 sub new {

@@ -1,5 +1,12 @@
 Revision history for Perl extension Aspect.
 
+0.11 Thu Aug 3 2004
+
+    - Fixed problem in upgrading from 0.08, CPAN.pm was getting confused
+      on Advice and Modular, because they had no version numbers, and
+      undef is smaller than 0.08. (merlyn)
+    - Lowered dependency on Test::Class to 0.03
+
 0.10 Thu Jul 30 2004
 
     - No longer a developer release
