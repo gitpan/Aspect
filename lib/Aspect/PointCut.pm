@@ -14,7 +14,7 @@ use Class::MethodMaker
     new_with_init => 'new',
     get_set       => 'spec';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {}   # might be useful in subclasses
 

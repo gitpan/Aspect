@@ -13,11 +13,12 @@ use Aspect::PointCut::NotOp;
 
 our %EXPORT_TAGS = ( all => [ qw(
 	advice calls returns or_op and_op not_op
+	around
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 # if the first argument isn't a pointcut object, make it a calls()
 # pointcut, the most common one
@@ -33,6 +34,8 @@ sub returns { Aspect::PointCut::Returns->new(@_) }
 sub or_op   { Aspect::PointCut::OrOp->new(@_)    }
 sub and_op  { Aspect::PointCut::AndOp->new(@_)   }
 sub not_op  { Aspect::PointCut::NotOp->new(@_)   }
+
+sub around  { calls(@_) | returns(@_) }
 
 1;
 
@@ -124,7 +127,7 @@ Examples:
 constructs a pointcut that matches the call join point of sub C<y1>
 in package C<main> only.
 
-=item C<calls(qr/(.*::)?[gs]et_/)>
+=item C<calls(qr/^(.*::)?[gs]et_/)>
 
 constructs a pointcut that matches the call join point of all
 subroutines whose name starts with C<get_> or C<set_>, in any
@@ -143,6 +146,12 @@ with C<bar>.
 This function, or pointcut operator, is just like C<calls()>, except
 that it applies to return join points instead of call join points.
 The object it constructs is of the type C<Aspect::PointCut::Returns>.
+
+=item C<around(specifier)>
+
+This function creates a pointcut that applies to call join points
+as well as return join points. It is equivalent to C<calls(specifier)
+| returns(specifier)>.
 
 =item C<or_op(leftexpr, rightexpr)>
 

@@ -2,7 +2,7 @@ package Aspect::Symbol::Enum;
 
 use base 'Exporter';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 our %EXPORT_TAGS = ( all => [ qw(
 	get_packages get_user_packages get_symbols

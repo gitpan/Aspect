@@ -5,7 +5,7 @@ use Class::MethodMaker
     get_set => [ qw/spec fh/ ];
 use Aspect qw(advice calls returns);
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub define {
 	my ($self, $spec) = @_;
@@ -60,7 +60,6 @@ Aspect::Trace - Modular aspect to trace subroutine calls
 
   use Aspect::Trace;
   my $trace = Aspect::Trace->new(qr/^main::(foo|bar)$/);
-  $trace->enable;
   foo(7);
 
 =head1 DESCRIPTION
@@ -101,13 +100,13 @@ will be directed to the new filehandle.
 =head1 INTERNALS
 
 This aspect consists of two pieces of advice for each affected
-class:
+subroutine:
 
 =over 4
 
 =item *
 
-When calling an subroutine affected by the aspect's pointcut, the
+When calling a subroutine affected by the aspect's pointcut, the
 subroutine name and arguments are printed along with the context
 (scalar, array, void).
 

@@ -6,7 +6,7 @@ use base 'Aspect::PointCut';
 use Class::MethodMaker
     get_set => 'op';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {
 	my $self = shift;

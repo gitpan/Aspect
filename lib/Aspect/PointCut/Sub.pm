@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base 'Aspect::PointCut';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {
 	my $self = shift;

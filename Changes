@@ -1,5 +1,17 @@
 Revision history for Perl extension Aspect.
 
+0.06  Fri Oct 26 16:42:51 CEST 2001
+	- added around() function to Aspect.pm
+	- added Attribute::Profiled
+	- added Aspect::Attribute interface to creating advice
+	- made Aspect::Advice's enable() and disable() return $self
+	- added cookbook example program callflow_attr.pl
+	- added cookbook recipes for bounds checking and change
+	  tracking, plus sample programs
+
+0.05  Thu Oct 11 09:44:50 CEST 2001
+	- removed dependency on Data::Denter
+
 0.04  Mon Oct  1 18:33:00 CEST 2001
 	- removed the patched Hook::LexWrap now that 0.20 is out
 	  which fixes all the problems of 0.10

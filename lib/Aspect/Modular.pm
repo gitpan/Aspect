@@ -4,7 +4,7 @@ use Class::MethodMaker
     new_with_init => 'new',
     list          => 'handlers';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {
 	my $self = shift;

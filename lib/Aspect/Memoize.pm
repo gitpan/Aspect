@@ -5,7 +5,7 @@ use Class::MethodMaker
     get_set => 'spec';
 use Aspect qw(advice calls returns);
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub define {
 	my ($self, $spec) = @_;

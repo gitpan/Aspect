@@ -80,20 +80,41 @@ documentation.
 
 =head1 CHANGES AND FUTURE DEVELOPMENT
 
-This C<README> refers to version 0.04. For details of changes,
+This C<README> refers to version 0.06. For details of changes,
 refer to the file C<Changes>.
 
 Future versions will provide new types of join points, pointcuts
 and modular aspects. Stability and performance is also an ongoing
 concern. See C<Aspect::Ideas> for an overview of these ideas.
 
-=head1 CHANGES IN VERSION 0.04
+=head1 CHANGES IN VERSION 0.06
 
 =over 4
 
 =item *
 
-Added documentation
+added C<around()> function to C<Aspect>
+
+=item *
+
+Added C<Attribute::Profiled>
+
+=item *
+
+added C<Aspect::Attribute> interface to creating advice
+
+=item *
+
+made C<Aspect::Advice>'s C<enable()> and C<disable()> return C<$self>
+
+=item *
+
+added cookbook example callflow_attr.pl
+
+=item *
+
+added cookbook recipes for bounds checking and change tracking,
+plus sample programs
 
 =back
 
@@ -102,7 +123,7 @@ Added documentation
 C<Aspect> has been uploaded to the CPAN; in any case it is available
 from:
 
-  http://codewerk.unixbeard.net/aspects/Aspect-0.04.tar.gz
+  http://codewerk.unixbeard.net/aspects/Aspect-0.06.tar.gz
 
 =head1 AUTHOR
 

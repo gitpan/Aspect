@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use base 'Aspect::PointCut::Sub';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub join_point_type { 'Aspect::JoinPoint::Return' }
 

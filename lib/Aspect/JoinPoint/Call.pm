@@ -5,7 +5,7 @@ use Hook::LexWrap;
 
 use overload '""' => \&as_string;
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub as_string {
 	my $self = shift;

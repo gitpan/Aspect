@@ -57,21 +57,32 @@ INSTALLATION
     documentation.
 
 CHANGES AND FUTURE DEVELOPMENT
-    This `README' refers to version 0.04. For details of changes, refer to
+    This `README' refers to version 0.06. For details of changes, refer to
     the file `Changes'.
 
     Future versions will provide new types of join points, pointcuts and
     modular aspects. Stability and performance is also an ongoing concern.
     See `Aspect::Ideas' for an overview of these ideas.
 
-CHANGES IN VERSION 0.04
-    *   Added documentation
+CHANGES IN VERSION 0.06
+    *   added `around()' function to `Aspect'
+
+    *   Added `Attribute::Profiled'
+
+    *   added `Aspect::Attribute' interface to creating advice
+
+    *   made `Aspect::Advice''s `enable()' and `disable()' return `$self'
+
+    *   added cookbook example callflow_attr.pl
+
+    *   added cookbook recipes for bounds checking and change tracking, plus
+        sample programs
 
 AVAILABILITY
     `Aspect' has been uploaded to the CPAN; in any case it is available
     from:
 
-      http://codewerk.unixbeard.net/aspects/Aspect-0.04.tar.gz
+      http://codewerk.unixbeard.net/aspects/Aspect-0.06.tar.gz
 
 AUTHOR
     Marcel Grunauer, <marcel@codewerk.com>

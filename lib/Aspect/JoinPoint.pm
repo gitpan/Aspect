@@ -6,7 +6,7 @@ use Aspect::JoinPoint::Call;
 use Aspect::JoinPoint::Return;
 use Aspect::Symbol::Enum qw(get_user_packages get_CODE);
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {}    # might be useful in a subclass
 
@@ -32,13 +32,6 @@ sub enum {
 			    Aspect::JoinPoint::Call->new($sym),
 			    Aspect::JoinPoint::Return->new($sym);
 		}
-	}
-
-	if ($::debug) {
-		use Data::Denter;
-		print "\nENUMERATING JOIN POINTS:\n";
-		print Denter \@jp;
-		print "\n";
 	}
 
 	return \@jp;

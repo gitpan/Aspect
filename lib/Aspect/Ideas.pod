@@ -4,6 +4,18 @@ Aspect Ideas - new ideas for aspects-oriented Perl
 
 =head1 DESCRIPTION
 
+=head1 Distribution Ideas
+
+=over 4
+
+=item Cookbook recipes
+
+=item Benchmark suite
+
+=item Comprehensive tests
+
+=back
+
 The following sections outline ideas for modular aspects, for new
 types of join points, and for new types of pointcuts. There are
 also some general ideas.
@@ -32,6 +44,11 @@ although that would be worthwhile as well.)
 
 Count invocations of a subroutine; benchmark subroutines (cf.
 Attribute::Profiled).
+
+=item Design-by-contract
+
+Implement design-by-contract pre- and postconditions using aspects,
+cf. C<Class::Contract>.
 
 =item Default Variable I/O
 
@@ -229,6 +246,30 @@ matches C<$x>.
 
 
 
+=head1 Debugger Support
+
+Debugger support for developing with aspects.
+
+=over 4
+
+=item Debugger commands
+
+Continue to next join point
+
+=item Affected Join Points
+
+List all join points affected by a pointcut.
+
+=item Meta-aspects
+
+An aspect to insert breakpoints or print other information when a
+join point is encountered.
+
+=back
+
+
+
+
 =head1 Completely Random Ideas
 
 Runtime (RT), coincides with program runtime. Define-time (DT),
@@ -274,6 +315,57 @@ the program's flow.
 Aspect order: if several aspects' pointcut affect a given join
 point, then the advice code of the aspect that has been defined
 later is run first.
+
+Implement design patterns (cf. GoF). Make patterns first-class
+citizens.
+
+Separation of concerns: separate the basic algorithms from
+special-purpose concerns such as synchronization, real-time
+constraints, and location control.
+
+Use Aspects where they make sense; don't use them where they don't
+make sense. Like with OOP and Perl.
+
+Combine aspects with other Perl technology: quantum aspects, aspects
+and coroutines, aspects and attributes, aspects and threads, aspects
+during compilation (B::*; compile-time join points; insert potential
+advice handlers during opportune moments, e.g. at the beginning
+and end of loops, after variable assignments etc.)
+
+"Dynamic extension of class structure for duration of a task.  This
+removes the pollution of the class graph with information which is
+only needed for a specific task." --
+http://www.ccs.neu.edu/research/demeter/biblio/context.html
+
+=head1 Possible Publicity
+
+=over 4
+
+=item Aspect-related sites
+
+=item Perl monger mailing lists
+
+=item use.perl journal
+
+=item articles
+
+In online and offline magazines (perl.com, tpj, consumer mags).
+
+=item Search engines and directories
+
+=item aspect.perl.org -> aspect.unixbeard.net ?
+
+=item lists.perl.org
+
+entry for the perl-aspects mailing list.
+
+=item conference talks
+
+=item AOP conferences
+
+Check AOSD 2002: http://trese.cs.utwente.nl/aosd2002.htm.
+
+=back
 
 =head1 AUTHOR
 

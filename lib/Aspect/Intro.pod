@@ -177,9 +177,9 @@ incur any performance hit.
 
 =over 4
 
-=item Aspect-oriented Programming Homepage
+=item Aspect-oriented Software Development
 
-http://www.parc.xerox.com/csl/projects/aop/
+http://aosd.net/
 
 =item AspectJ
 

@@ -4,7 +4,7 @@ use base 'Aspect::JoinPoint';
 use Class::MethodMaker
     get_set => 'sub';
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {
 	my $self = shift;

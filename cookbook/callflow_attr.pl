@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Aspect qw(advice calls returns);
+use Aspect::Attribute;
 
 package Foo;
 
@@ -12,13 +12,12 @@ sub bar { baz(17) + baz(23) - shift }
 
 package main;
 
-my $adv1 = advice(calls(qr/^Foo::/), sub {
+sub adv1 : Before(qr/^Foo::/) {
 	$::indent++;
 	print ' ' x ($::indent - 1), $::thisjp->signature(@_), "\n"
-});
-my $adv2 = advice(returns(qr/^Foo::/), sub { $::indent-- });
+}
 
-$_->enable for $adv1, $adv2;
+sub adv2 : After(qr/^Foo::/) { $::indent-- }
 
 Foo::bar(9);
 

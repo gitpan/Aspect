@@ -5,7 +5,7 @@ use Class::MethodMaker
     get_set       => [ qw/pointcut code/ ];
 use Aspect::JoinPoint;
 
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 sub init {
 	my $self = shift;
@@ -36,11 +36,14 @@ sub enable {
 
 		push @{ $self->{handles} } => $jp->install($self->code);
 	}
+
+	$self;
 }
 
 sub disable {
 	my $self = shift;
 	undef $self->{handles};
+	$self;
 }
 
 1;
@@ -96,9 +99,12 @@ not be sufficient to have the advice code run; there may be a
 run-time match. However, in the case of call join points or return
 join points, once an advice is installed, it will run.
 
+Returns the advice object.
+
 =item C<disable()>
 
 Disables, or disactivates, the advice from all affected join points.
+Returns the advice object.
 
 =item C<pointcut([pointcut])>
 
