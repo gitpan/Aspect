@@ -1,0 +1,68 @@
+
+* new pointcuts: execution, cflowbelow, within, advice, calledby
+
+* a debug flag to print out subs that were matched on match_define
+
+* warnings when over 1000 methods wrapped
+
+* bring back Marcel's tracing aspect and example, class invariants
+  example, cookbook
+
+* need a way to match subs with an attribute, attributes::get()
+  will not work for some reason
+
+* isa() support for method pointcuts as Gaal Yahas suggested: match
+  methods on class hierarchies without callbacks
+
+* add whatever constructs required for mocking packages, objects,
+  builtins
+
+* need a way to match subs that have not been imported in to a package
+
+* improve Test::Class aspect- allow for test method to decide UIT
+  construction params
+
+IDEAS
+
+* design aspects: DBC, threading, GOF patterns
+
+* middleware aspects: security, load balancing, timeout/retry, distribution
+
+* Perl aspects: add use strict/warning/Carp to all matched packages
+
+* Perl join points: phasic- BEGIN/INIT/CHECK/END 
+
+* investigate alternate strategy for weaving in Perl, using the B::* way,
+  just like AspectJ
+
+* interface with existing Perl modules for logging, tracing, param
+  checking, generally all things that are AOPish on CPAN. One should
+  be able to use it all through one consistent interface
+
+* UnderscoreContext aspect: subs that match will, if called with no
+  parameters, get $_, and if in void context, return value will set $_.
+  Allows you to use your subs like builtins, that fall back on $_. So if
+  we have a sub:
+
+     sub replace_foo { my $in = shift; $in =~ s/foo/bar; $in }
+
+  Then both calls would be equivalent:
+
+     $_ = replace_foo($_);
+     replace_foo();
+
+* a generic FriendParamAppender aspect, that adds to a param list
+  for affected methods, any object the method requires. Heuristics
+  are applied to find the friend: maybe it is available in the call
+  flow? Perhaps someone in the call flow has an accessor that can
+  get it? Maybe a lexical in some sub in the call flow has it? The
+  point is to cover all cases where we pass objects around, so that
+  we don't have to.
+
+* support more pulling (vs. pushing) of aspects into packages:
+  attributes, package specific join points
+ 
+* debugger support: break on pointcut
+
+* allow finer control of advice execution order
+

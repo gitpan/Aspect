@@ -1,57 +1,83 @@
 Revision history for Perl extension Aspect.
 
-0.07  Wed Jul 31 22:42:27 CEST 2002
-	- The distribution has been adapted for use with
-	  perl5.8.0. C<Hook::LexWrap> is now a core module, but there was
-	  a problem with context (wantarray) handling with Aspect::Memoize.
+0.09_2 Sat Mar 6 2004
 
-	  Sorry about the perl 5.6.x users, but this is bleeding-edge
-	  stuff, so you're expected to use the very latest gear. Anyway,
-	  you can still get an earlier version (up to 0.07) from CPAN,
-	  which will work with perl 5.6.x.
-	- Aspect::Memoize is now intended for subroutines returning
-	  scalars only. That is, if the sub is called in list context,
-	  it will still only memoize, and return, a memoized scalar. Void
-	  context obviously doesn't matter when it comes to memoization;
-	  subroutines returning lists are something I have to think about.
-	- Tests now use Test::More
+    - AdviceContext now has the original code, so you can do
+      AspectJ-style around advice. You can call the original code from
+      before or after advice. Added AdviceContext::run_original.
+    - Memoize can memoize in any context, not just scalar, again
+    - Added Test::Class helper aspect
+    - Started using Devel::Symdump
+
+0.09_1 Sat Mar 6 2004
+    - Released for review by participants in YAPC::Israel 2004
+    - New syntax is incompatible with old
+    - New maintainer, Ran Eilam
+    - Control flow pointcut: cflow(), done according to Marcel's design
+    - Advice context trapping for control flow pointcuts
+    - Use Test::Class for unit tests
+    - Wormhole reusable aspect
+    - Added prototypes so you can dispense with parentheses
+    - Removed return/around pointcuts, added after advice
+    - Removed attribute interface
+    - Added a mutated version of Hook::LexWrap with support for
+      appending/removing arguments
+    - Moved reusable aspects to Aspect::Library
+    - regression: Aspect exported subs generate join points again
+
+0.07  Wed Jul 31 22:42:27 CEST 2002
+    - The distribution has been adapted for use with
+      perl5.8.0. C<Hook::LexWrap> is now a core module, but there was
+      a problem with context (wantarray) handling with Aspect::Memoize.
+      Sorry about the perl 5.6.x users, but this is bleeding-edge
+      stuff, so you're expected to use the very latest gear. Anyway,
+      you can still get an earlier version (up to 0.07) from CPAN,
+      which will work with perl 5.6.x.
+    - Aspect::Memoize is now intended for subroutines returning
+      scalars only. That is, if the sub is called in list context,
+      it will still only memoize, and return, a memoized scalar. Void
+      context obviously doesn't matter when it comes to memoization;
+      subroutines returning lists are something I have to think about.
+    - Tests now use Test::More
 
 0.07  Fri Mar 15 09:04:51 CET 2002
-	- symbols exported from Aspect.pm now don't generate join points.
-	  So I added Aspect::import() and modified Aspect::JoinPoint::enum()
-	  to check for %Aspect::exp_syms.
+    - symbols exported from Aspect.pm now don't generate join points.
+      So I added Aspect::import() and modified Aspect::JoinPoint::enum()
+      to check for %Aspect::exp_syms.
 
 0.06  Fri Oct 26 16:42:51 CEST 2001
-	- added around() function to Aspect.pm
-	- added Aspect::Profiled
-	- added Aspect::Attribute interface to creating advice
-	- made Aspect::Advice's enable() and disable() return $self
-	- added cookbook example program callflow_attr.pl
-	- added cookbook recipes for bounds checking and change
-	  tracking, plus sample programs
+    - added around() function to Aspect.pm
+    - added Aspect::Profiled
+    - added Aspect::Attribute interface to creating advice
+    - made Aspect::Advice's enable() and disable() return $self
+    - added cookbook example program callflow_attr.pl
+    - added cookbook recipes for bounds checking and change
+      tracking, plus sample programs
 
 0.05  Thu Oct 11 09:44:50 CEST 2001
-	- removed dependency on Data::Denter
+    - removed dependency on Data::Denter
 
 0.04  Mon Oct  1 18:33:00 CEST 2001
-	- removed the patched Hook::LexWrap now that 0.20 is out
-	  which fixes all the problems of 0.10
-	- added documentation (a recurring theme, never finishes)
+    - removed the patched Hook::LexWrap now that 0.20 is out
+      which fixes all the problems of 0.10
+    - added documentation (a recurring theme, never finishes)
 
 0.03  Sun Sep 30 19:43:56 CEST 2001
-	- added documentation
-	- Included a patched Hook::LexWrap that fixes a bug with
-	  wantarray preservation in subroutine wrappers. Will be
-	  removed if and when Damian approves of the patch or otherwise
-	  fixes the bug.
+    - added documentation
+    - Included a patched Hook::LexWrap that fixes a bug with
+      wantarray preservation in subroutine wrappers. Will be
+      removed if and when Damian approves of the patch or otherwise
+      fixes the bug.
 
 0.02  Fri Sep 28 12:59:06 CEST 2001
-	- added documentation
-	- added '$::thisjp' global variable
-	- added modular memoization aspect: Aspect::Memoize
-	- added modular tracing aspect: Aspect::Trace
+    - added documentation
+    - added '$::thisjp' global variable
+    - added modular memoization aspect: Aspect::Memoize
+    - added modular tracing aspect: Aspect::Trace
 
 0.01  Fri Sep 28 10:36:08 CEST 2001
-	- original version; created by h2xs 1.20 with options
-		-XAn Aspect
+    - original version; created by h2xs 1.20 with options
+        -XAn Aspect
+
+
 

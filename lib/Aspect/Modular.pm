@@ -1,180 +1,89 @@
 package Aspect::Modular;
 
-# $Id: Modular.pm,v 1.3 2002/07/31 21:29:16 marcelgr Exp $
-#
-# $Log: Modular.pm,v $
-# Revision 1.3  2002/07/31 21:29:16  marcelgr
-# changed version number to 0.08
-#
-# Revision 1.2  2002/07/31 21:03:13  marcelgr
-# changed e-mail address; other changes for version 0.08
-#
-# Revision 1.1.1.1  2002/06/13 07:17:54  marcelgr
-# initial import
-#
+use strict;
+use warnings;
+use Carp;
 
-use Class::MethodMaker
-    new_with_init => 'new',
-    list          => 'handlers';
+# creating --------------------------------------------------------------------
 
-our $VERSION = '0.08';
-
-sub init {
-	my $self = shift;
-	return unless @_;
-	$self->define(@_);
+sub new {
+	my $self = bless {}, shift;
+	$self->{advice} = [$self->get_advice(@_)];
+	return $self;
 }
 
-# This is where you set up the advice.
-# Implement this in subclasses.
+# template methods ------------------------------------------------------------
 
-sub define {}
-
-sub enable {
-	my $self = shift;
-	$_->enable(@_) for $self->handlers;
-}
-
-sub disable {
-	my $self = shift;
-	$_->disable(@_) for $self->handlers;
-}
+sub get_advice {}
 
 1;
 
-__END__
-
 =head1 NAME
 
-Aspect::Modular - Base class for modular aspects
+Aspect::Modular - base class for reusable aspects
 
 =head1 SYNOPSIS
 
+  # subclassing to create a reusable aspect
+  package Aspect::Library::ConstructorTracer;
+  use Aspect;
   use base 'Aspect::Modular';
-  use Aspect qw(advice calls returns);
-
-  sub define {
-    my ($self, $spec) = @_;
-    $self->handlers_push(
-      advice(calls($spec),   sub { ... }),
-      advice(returns($spec), sub { ... })
-    );
-    $self->enable;
+  sub get_advice {
+     my ($self, $pointcut) = @_;
+     after
+        { print 'created object: '. shift->return_value. "\n" }
+        $pointcut;
   }
+
+  # using the new aspect
+  package main;
+  use Aspect;
+  # print message when constructing new Person
+  aspect ConstructorTracer => call 'Person::new';
 
 =head1 DESCRIPTION
 
-This is the base class for modular aspects. Specific modular aspects
-need to override the C<define()> method at least.
+All reusable aspect inherit from this class. Such aspects are created in
+user code, using the C<aspect()> sub exported by L<Aspect|::Aspect>. You
+call C<aspect()> with the class name of the reusable aspect (it must
+exist in the package C<Aspect::Library>), and any parameters (pointcuts,
+class names, code to run, etc.) the specific aspect may require.
 
-=head1 METHODS
+The L<Wormhole|Aspect::Library::Wormhole> aspect, for example, expects 2
+pointcut specs for the wormhole source and target, while the
+L<Profiler|Aspect::Library::Profiler> aspect expects a pointcut object,
+to select the subs to be profiled.
 
-This class implements the following methods:
+You create a reusable aspect by subclassing this class, and providing one
+I<template method>: C<get_advice()>. It is called with all the parameters
+that were sent when user code created the aspect, and is expected to
+return L<Aspect::Advice> object/s, that will be installed while the
+reusable aspect is still in scope. If the C<aspect()> sub is called in
+void context, the reusable aspect is installed until class reloading or
+interpreter shutdown.
 
-=over 4
+Typical things a reusable aspect may want to do:
 
-=item C<new([args])>
+=over4
 
-This is the constructor. It creates the object, then calls C<init()>
-to handle any arguments that were passed to the constructor.
+=item *
 
-=item C<init([args])>
+Install advice on pointcuts specified by the caller
 
-This method initializes newly constructed objects. Since a modular
-aspect most likely, when instantiated, wants to create and enable
-some advice, it calls the C<define()> method with the same arguments
-as C<init()> got itself.
+=item *
 
-=item C<define(spec)>
-
-This method should be overridden in subclasses and create and enable
-the advice necessary to implement the modular aspect. All advice
-should be pushed onto the object's handler array using C<handler_push()>.
-See subclasses for examples.
-
-=item C<enable([packages])>
-
-=item C<disable([packages])>
-
-=item C<handlers()>
-
-Each aspect object stores lexical handlers created by installing
-advice code on join points in an array called C<handlers>. For
-example, call and return join points install advice by wrapping
-the affected subroutine using C<Hook::LexWrap>. Those wrappers are
-lexically bound, so if we want to disable them and restore the
-subroutine to its original state, all we need to do is to let the
-handlers go out of scope. See the C<Hook::LexWrap> manpage for
-details. Obviously, if the modular aspect goes out of scope, so do
-the handlers.
-
-Access to these handlers is defined via a C<list> property created
-by C<Class::MethodMaker>.
-
-This accessor returns the handlers. In an array context it returns
-them as an array and in scalar context as a reference to the array.
-
-=item C<handlers_push(advice)>
-
-Pushes a list of handlers onto the handlers array. Cf. C<push()>
-in perlfunc.
-
-=item C<handlers_pop()>
-
-Pops an entry off the handlers array and returns it. Cf. C<pop()>
-in perlfunc.
-
-=item C<handlers_shift(advice)>
-
-Shifts a list of handlers onto the handlers array. Cf. C<shift()>
-in perlfunc.
-
-=item C<handlers_unshift()>
-
-Unshifts an entry off the handlers array and returns it. Cf.
-C<unshift()> in perlfunc.
-
-=item C<handlers_splice()>
-
-Splices the handlers array. Cf. C<splice()> in perlfunc.
-
-=item C<handlers_clear()>
-
-Clears the handlers array.
-
-=item C<handlers_count()>
-
-Returns the number of elements in x.
-
-=item C<handlers_index(indices)>
-
-Takes a list of indices, returns a list of the corresponding values.
-
-=item C<handlers_set(list)>
-
-Takes a list, treated as pairs of index => value; each given index
-is set to the corresponding value. No return value.
+Push (vs. OOP pull) subs and base classes into classes specified by
+the caller
 
 =back
 
-=head1 BUGS
-
-None known so far. If you find any bugs or oddities, please do inform the
-author.
-
-=head1 AUTHOR
-
-Marcel GrE<uuml>nauer <marcel@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
-
 =head1 SEE ALSO
 
-perl(1), Aspect::Intro(3pm), Aspect::Overview(3pm).
+See the L<Aspect|::Aspect> pod for a guide to the Aspect module.
+
+You can find examples of reusable aspects in the C<Aspect::Library>
+package. L<Aspect::Library::Singleton> for example.
 
 =cut
+
+

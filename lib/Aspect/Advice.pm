@@ -1,163 +1,129 @@
 package Aspect::Advice;
 
-# $Id: Advice.pm,v 1.3 2002/07/31 21:29:16 marcelgr Exp $
-#
-# $Log: Advice.pm,v $
-# Revision 1.3  2002/07/31 21:29:16  marcelgr
-# changed version number to 0.08
-#
-# Revision 1.2  2002/07/31 21:03:13  marcelgr
-# changed e-mail address; other changes for version 0.08
-#
-# Revision 1.1.1.1  2002/06/13 07:17:54  marcelgr
-# initial import
-#
+use strict;
+use warnings;
+use Carp;
+use Aspect::AdviceContext;
+use Aspect::Weaver;
 
-use Class::MethodMaker
-    new_with_init => 'new',
-    get_set       => [ qw/pointcut code/ ];
-use Aspect::JoinPoint;
+sub new {
+	my ($class, $type, $code, $pointcut) = @_;
+	my $self = bless {
+		weaver   => Aspect::Weaver->new, # a weaver that will install advice code
+		hooks    => undef,               # list of Hook::LexWrap hooks
+		type     => $type,               # before or after
+		code     => $code,               # the advice code
+		pointcut => $pointcut,           # the advice pointcut
+	}, $class;
+	$self->install;
+	return $self;
+}
 
-our $VERSION = '0.08';
+# private ---------------------------------------------------------------------
 
-sub init {
-	my $self = shift;
-	return unless @_;
-	$self->pointcut(+shift);
-	$self->code(+shift);
-};
-
-# enable() asks the aspect's pointcut to install the aspect on all
-# define-time matching join points. Takes a list of package names
-# as optional arguments, which limits the packages on which the advice
-# may be installed.
-
-sub enable {
-	my $self = shift;
-
-	# Iterate over all join points, generating appropriate objects.
-	# Pass each join point to the pointcut expression. If there is a
-	# define-time match, ask the join point to install the advice code.
-
-	for my $jp (@{ Aspect::JoinPoint::enum(@_) }) {
-		print "testing <$jp>\n" if $::debug;
-		next unless $self->pointcut->match_define($jp);
-		print "match, installing code\n" if $::debug;
-
-		# a join point can return more than one handle, e.g.
-		# see call and return join points
-
-		push @{ $self->{handles} } => $jp->install($self->code);
+sub install {
+	my $self     = shift;
+	my $weaver   = $self->weaver;
+	my $type     = $self->type;
+	my $pointcut = $self->pointcut;
+	my $code     = $self->code;
+	# find all pointcuts that are staticaly matched
+	# wrap the method with advice code and install the wrapper
+	for my $sub_name ($weaver->get_sub_names) {
+		next unless $pointcut->match_define($sub_name);
+		my $wrapped_code = $self->wrap_code($type, $code, $pointcut, $sub_name);
+		$self->add_hooks
+			($weaver->install($type, $sub_name, $wrapped_code));
 	}
-
-	$self;
 }
 
-sub disable {
-	my $self = shift;
-	undef $self->{handles};
-	$self;
+# return wrapper sub to be installed instead of original
+# wrapper sub creates context then calls advice code
+# it runs only if the pointcut answers true to match_run()
+sub wrap_code {
+	my ($self, $type, $code, $pointcut, $sub_name) = @_;
+
+	return sub {
+		# hacked Hook::LexWrap calls hooks with 3 params
+		my ($params, $original, $return_value) = @_;
+		my $runtime_context = {};
+		return unless $pointcut->match_run($sub_name, $runtime_context);
+
+		# create context for advice code
+		my $advice_context = Aspect::AdviceContext->new(
+			sub_name       => $sub_name,
+			type           => $type,
+			pointcut       => $pointcut,
+			params         => $params,
+			return_value   => $return_value,
+			original       => $original,
+			%$runtime_context,
+		);
+		
+		# execute advice code with its context
+		if (wantarray)
+			{ () = &$code($advice_context) }
+		elsif (defined wantarray)
+			{ my $dummy = &$code($advice_context) }
+		else
+			{ &$code($advice_context) }
+
+		# if proceeding to original, modify params, else modify return value
+		if ($type eq 'before' && $advice_context->proceed)
+			{ @$params = $advice_context->params }
+		else
+			{ $_[-1] = $advice_context->return_value }
+	};
 }
+
+sub add_hooks { push @{shift->{hooks}}, shift }
+
+sub weaver   { shift->{weaver}   }
+sub type     { shift->{type}     }
+sub code     { shift->{code}     }
+sub pointcut { shift->{pointcut} }
 
 1;
 
-__END__
-
 =head1 NAME
 
-Aspect::Advice - Object representing a pointcut and associated advice
+Aspect::Advice - change how Perl code is run at a pointcut
 
 =head1 SYNOPSIS
 
-  use Aspect qw(advice calls returns);
-  
-  sub get_foo { print "in foo\n" }
-  sub set_bar { print "in bar\n" }
-  sub baz     { print "in baz\n" }
-  
-  my $aspect = advice(calls(qr/^(.*::)?[gs]et_/), 
-      sub { printf "entering %s\n", $::thisjp->sub });
-  
-  $aspect->enable;
-  
-  get_foo();
-  set_bar();
-  baz();
+  # creating using public interface: trace calls to Account subs
+  use Aspect;
+  before { print 'called: '. shift->sub_name } call qw/^Account::/;
+
+  # creating using internal interface
+  use Aspect::Advice;
+  $advice = Aspect::Advice->new(before =>
+     { print 'called: '. shift->sub_name },
+     call qw/^Account::/
+  );
 
 =head1 DESCRIPTION
 
-An aspect consists of one or more advice, which each consists of
-a pointcut and a coderef. The coderef is executed whenever the
-pointcut matches a given point in execution.
+An advice is composed of a pointcut and some code that will run at the
+pointcut. The code is run C<before> or C<after> the pointcut, depending
+on advice C<type>.
 
-=head1 METHODS
+You do not normally create advice using the constructor. By C<use()>ing
+L<Aspect|::Aspect>, you get 2 subs imported: C<before()> and C<after()>,
+that do what you need. They also store the advice if called in void
+context, so you do not need to keep in scope. The advice code will be
+removed when the advice object is destroyed.
 
-This class implements the following methods:
+The advice code is given one parameter: an L<Aspect::AdviceContext>. You
+use this object to change the parameter list for the matched sub, modify
+return value, find out information about the matched sub, and more.
 
-=over 4
-
-=item C<new([pointcut, code])>
-
-This is the constructor. It takes as optional arguments the advice's
-pointcut and the coderef, which are passed to C<pointcut()> and
-C<code()>, respectively.
-
-=item C<enable()>
-
-Enables, or activates, the advice. Each join point in the program
-is tested against the pointcut designator. If there is a define-time
-match, the join point is asked to install the advice code. Note
-that depending on the type of join point, a define-time match may
-not be sufficient to have the advice code run; there may be a
-run-time match. However, in the case of call join points or return
-join points, once an advice is installed, it will run.
-
-Returns the advice object.
-
-=item C<disable()>
-
-Disables, or disactivates, the advice from all affected join points.
-Returns the advice object.
-
-=item C<pointcut([pointcut])>
-
-Sets (with arguments), or gets (without arguments), the advice's
-pointcut designator. This needs to be an object of the type
-C<Aspect::PointCut>.
-
-=item C<code([coderef])>
-
-Sets (with arguments), or gets (without arguments), the advice
-code. When the code is run, it can examine the current join point
-using the variable C<$::thisjp>. Depending on the type of join
-point, the advice code can then obtain certain context information.
-
-For example, for a call join point it may be interesting to know
-which subroutine has been called. A call join point is of the type
-C<Aspect::JoinPoint::Call>, so you can call methods as explained
-on its manpage. This is what the sample code in the Synopsis above
-does.
-
-=back
-
-=head1 BUGS
-
-None known so far. If you find any bugs or oddities, please do inform the
-author.
-
-=head1 AUTHOR
-
-Marcel GrE<uuml>nauer <marcel@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright 2001-2002 Marcel GrE<uuml>nauer. All rights reserved.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+This class has no public methods that do anything, but there are
+accessors C<weaver()>, C<type()>, C<code()>, and C<pointcut()>, if you
+need them.
 
 =head1 SEE ALSO
 
-perl(1), Aspect::Intro(3pm), Aspect::Overview(3pm).
+See the L<Aspect|::Aspect> pod for a guide to the Aspect module.
 
 =cut

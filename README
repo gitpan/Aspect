@@ -1,51 +1,54 @@
 NAME
-    Aspect-Oriented Perl - Aspect-oriented programming in pure Perl
+
+   Aspect - AOP in Perl
 
 DESCRIPTION
-  Introduction to AOP
-    Aspect-oriented Programming (AOP) is a programming methodology developed
-    by Xerox PARC. The basic idea is that in complex class systems there are
-    certain aspects or behaviors that cannot normally be expressed in a
-    coherent, concise and precise way. One example of such aspects are
-    design patterns, which combine various kinds of classes to produce a
-    common type of behavior.
 
-    Aspects in Perl provide:
+   Aspect-oriented Programming (AOP) is a programming method developed
+   by Xerox PARC and others. The basic idea is that in complex class
+   systems there are certain aspects or behaviors that cannot normally
+   be expressed in a coherent, concise and precise way. One example of
+   such aspects are design patterns, which combine various kinds of
+   classes to produce a common type of behavior. Another is logging. See
+   http://www.aosd.net for more info.
 
-    *   Dynamic enabling and disabling of aspects at run-time
+   Aspects in Perl provide:
 
-    *   Modular aspects for prepackaged functionality
+   * Dynamic enabling and disabling of aspects at run-time
+   * Reusable aspects for prepackaged functionality
 
-    See "Aspect::Intro" for an introduction to aspect-oriented programming.
-    See "Aspect::Overview" for an overview of the modules and classes that
-    comprise this distribution. See "Aspect::Ideas" for ideas on future
-    developments. See "Aspect::Cookbook" for aspect-oriented recipes for
-    common situations. See the individual modules' manpages for information
-    on how to use and implement aspects.
+   Start with the Aspect module pod for for an introduction to Perl AOP.
+   The examples directory in the distribution shows some aspect
+   examples. The unit tests are in the tests directory, and can also be
+   used as API examples.
 
 LIMITATIONS
-    *   Many types of join points and pointcuts remain unimplemented.
 
-    *   Performance may suffer for aspects affecting a wide range of join
-        points.
+   * Some types of pointcuts remain unimplemented
+   * Performance may suffer for aspects affecting a wide range of
+     join points
+   * Getting pointcuts to play well with inheritance is tricky
 
 PREREQUISITES
-    "Aspect" requires the following modules, which can be obtained from
-    CPAN:
 
-      Class::MethodMaker
-      Hook::LexWrap
-      IO::Scalar
+   Aspect requires Perl 5.8.2, and the following modules, which can be
+   obtained from CPAN:
 
-    If you install "Aspect" from the CPAN shell, these modules will, if
-    necessary, be installed automatically as well.
+      Test::Class,
+      Benchmark::Timer
+      Devel::Symdump
+      File::Find::Rule
+
+   If you install Aspect from the CPAN shell, these modules will, if
+   necessary, be installed automatically as well.
 
 INSTALLATION
-    It's all pure Perl, so just put the .pm files in their appropriate local
-    Perl subdirectories.
 
-    The easiest way to install this distribution is using the standard build
-    process for Perl modules:
+   Its all pure Perl, so just put the .pm files in their appropriate local
+   Perl subdirectories.
+
+   The easiest way to install this distribution is using the standard build
+   process for Perl modules:
 
       perl Makefile.PL
       make
@@ -56,44 +59,26 @@ INSTALLATION
     documentation.
 
 CHANGES AND FUTURE DEVELOPMENT
-    This "README" refers to version 0.07. For details of changes, refer to
-    the file "Changes".
 
-    Future versions will provide new types of join points, pointcuts and
-    modular aspects. Stability and performance is also an ongoing concern.
-    See "Aspect::Ideas" for an overview of these ideas.
+   This README refers to version 0.09_02. The main change in this version
+   is the addition of cflow() pointcut, and the addition of a new
+   maintainer. See the Changes file for more details.
 
-CHANGES IN VERSION 0.08
-    *   The distribution has been adapted for use with perl5.8.0.
-        "Hook::LexWrap" is now a core module, but there was a problem with
-        context (wantarray) handling with Aspect::Memoize.
-
-        Sorry about the perl 5.6.x users, but this is bleeding-edge stuff,
-        so you're expected to use the very latest gear. Anyway, you can
-        still get an earlier version (up to 0.07) from CPAN, which will work
-        with perl 5.6.x.
-
-    *   "Aspect::Memoize" is now intended for subroutines returning scalars
-        only. That is, if the sub is called in list context, it will still
-        only memoize, and return, a memoized scalar. Void context obviously
-        doesn't matter when it comes to memoization; subroutines returning
-        lists are something I have to think about.
-
-    *   Tests now use "Test::More".
+   Future versions will provide new types of join points, pointcuts and
+   modular aspects. Stability and performance is also an ongoing
+   concern. See the TODO file for more info.
 
 AVAILABILITY
-    "Aspect" has been uploaded to the CPAN.
+
+   Aspect has been uploaded to the CPAN.
 
 AUTHOR
-    Marcel Grünauer <marcel@cpan.org>
+
+   Marcel Grünauer <marcel@cpan.org>, Ran Eilam <eilara@cpan.org>
 
 COPYRIGHT
-    Copyright 2001-2002 Marcel Grünauer. All rights reserved.
 
-    This library is free software; you can redistribute it and/or modify it
-    under the same terms as Perl itself.
+   Copyright 2001-2002 Marcel Grünauer. All rights reserved.
 
-SEE ALSO
-    Aspect::Intro(3pm), Aspect::Cookbook(3pm), Aspect::Ideas(3pm),
-    Aspect(3pm).
-
+   This library is free software; you can redistribute it and/or modify
+   it under the same terms as Perl itself.

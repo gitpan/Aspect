@@ -1,23 +1,24 @@
-require 5.008;
+require 5.008002;
+
 use ExtUtils::MakeMaker;
 
 print <<EOWARN;
 
-This is alpha software. Remember to read the 'README' file.
+This is alpha software. There have been massive API changes since last
+version. Please check README and Changes.
 
 EOWARN
 
 WriteMakefile(
-    'NAME'		=> 'Aspect',
-    'VERSION_FROM'	=> 'lib/Aspect.pm', # finds $VERSION
-    'PREREQ_PM'		=> {
-    	Class::MethodMaker  => 1.02,
-    	IO::Scalar          => 1.125,
-	Hook::LexWrap       => 0.20,
-	Test::More          => 0.45,
-    },
-    dist                => {
-        # don't ask about existing .tar.gz files
-        COMPRESS => 'gzip --force --best'
-    },
+	NAME          => 'Aspect',
+	ABSTRACT      => 'AOP for Perl',
+	VERSION_FROM  => 'lib/Aspect.pm',
+	AUTHOR        => 'Ran Eilam <eilara@cpan.org>',
+	dist          => { COMPRESS => 'gzip --force --best' },
+	PREREQ_PM     => {
+		Test::Class      => 0.06_5,
+		Devel::Symdump   => 2.03,
+		Benchmark::Timer => 0.5,
+	},
 );
+
