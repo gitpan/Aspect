@@ -33,40 +33,42 @@ sub wrap (*@) {
 			qw(pre post);
 	no warnings 'redefine';
 	my ($caller, $unwrap) = *CORE::GLOBAL::caller{CODE};
-	$imposter = sub {
-		if ($unwrap) { goto &$original }
-		my ($return, $prereturn);
-		if (wantarray) {
-			$prereturn = $return = [];
-			() = $wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
-			if (ref $return eq 'ARRAY' && $return == $prereturn && !@$return) {
-				$return = [ &$original(@_) ];
-				() = $wrapper{post}->(\@_, $original, $return)
-					if $wrapper{post};
+	my $prototype = prototype($original)? '('. prototype($original). ')': '';
+	# any way to set prototypes other than eval?
+	eval '$imposter = sub '. $prototype. q{{
+			if ($unwrap) { goto &$original }
+			my ($return, $prereturn);
+			if (wantarray) {
+				$prereturn = $return = [];
+				() = $wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
+				if (ref $return eq 'ARRAY' && $return == $prereturn && !@$return) {
+					$return = [ &$original(@_) ];
+					() = $wrapper{post}->(\@_, $original, $return)
+						if $wrapper{post};
+				}
+				return ref $return eq 'ARRAY' ? @$return : ($return);
 			}
-			return ref $return eq 'ARRAY' ? @$return : ($return);
-		}
-		elsif (defined wantarray) {
-			$return = bless sub {$prereturn=1}, 'Aspect::Hook::LexWrap::Cleanup';
-			my $dummy = $wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
-			unless ($prereturn) {
-				$return = &$original(@_);
-				$dummy = scalar $wrapper{post}->(\@_, $original, $return)
-					if $wrapper{post};
+			elsif (defined wantarray) {
+				$return = bless sub {$prereturn=1}, 'Aspect::Hook::LexWrap::Cleanup';
+				my $dummy = $wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
+				unless ($prereturn) {
+					$return = &$original(@_);
+					$dummy = scalar $wrapper{post}->(\@_, $original, $return)
+						if $wrapper{post};
+				}
+				return $return;
 			}
-			return $return;
-		}
-		else {
-			$return = bless sub {$prereturn=1}, 'Aspect::Hook::LexWrap::Cleanup';
-			$wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
-			unless ($prereturn) {
-				&$original(@_);
-				$wrapper{post}->(\@_, $original, $return)
-					if $wrapper{post};
+			else {
+				$return = bless sub {$prereturn=1}, 'Aspect::Hook::LexWrap::Cleanup';
+				$wrapper{pre}->(\@_, $original, $return) if $wrapper{pre};
+				unless ($prereturn) {
+					&$original(@_);
+					$wrapper{post}->(\@_, $original, $return)
+						if $wrapper{post};
+				}
+				return;
 			}
-			return;
-		}
-	};
+	}};
 	ref $typeglob eq 'CODE' and return defined wantarray
 		? $imposter
 		: carp "Uselessly wrapped subroutine reference in void context";

@@ -27,20 +27,26 @@ LIMITATIONS
    * Some types of pointcuts remain unimplemented
    * Performance may suffer for aspects affecting a wide range of
      join points
-   * Getting pointcuts to play well with inheritance is tricky
+   * Getting pointcuts to play well with inheritance is not as easy as
+     it could be
 
 PREREQUISITES
 
-   Aspect requires Perl 5.8.2, and the following modules, which can be
-   obtained from CPAN:
+   Aspect requires at least Perl 5.8.2, and the following modules, which
+   can be obtained from CPAN:
 
-      Test::Class,
-      Benchmark::Timer
       Devel::Symdump
-      File::Find::Rule
 
    If you install Aspect from the CPAN shell, these modules will, if
    necessary, be installed automatically as well.
+
+   To use the optional Profiler aspect, you need to install:
+
+      Benchmark::Timer
+
+   For its test suite the Aspect module includes:
+
+      Test::Class
 
 INSTALLATION
 
@@ -60,8 +66,8 @@ INSTALLATION
 
 CHANGES AND FUTURE DEVELOPMENT
 
-   This README refers to version 0.10. This is the 1st non-developer
-   release since Marcel's last release.
+   This README refers to version 0.12. See the Changes file for detailed
+   list of changes.
 
    Future versions will provide new types of join points, pointcuts and
    modular aspects. Stability and performance is also an ongoing

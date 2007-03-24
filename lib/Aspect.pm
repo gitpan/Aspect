@@ -11,7 +11,7 @@ use Aspect::Pointcut::Cflow;
 
 use base 'Exporter';
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 our @EXPORT  = qw(aspect before after call cflow);
 
 my (@Aspect_Store, @Advice_Store);

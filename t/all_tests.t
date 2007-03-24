@@ -1,4 +1,4 @@
-#!perl
+#!/usr/bin/perl
 
 require 5.008;
 

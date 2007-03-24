@@ -1,5 +1,8 @@
 package Aspect::Library::Listenable;
 
+# TODO: update docs to explain always_fire, setting handler params
+# specifically instead of getting default (event), and event cloning
+
 use strict;
 use warnings;
 use Carp;
@@ -17,14 +20,17 @@ sub get_advice {
 
 		my $context    = shift;
 		my $listenable = $context->self;
+		my %params     = %event_params;
 
 		return unless has_listeners($listenable, $event_name);
 
-		my %old_state = get_listenable_state($listenable, \%event_params);
+		my $always_fire = delete $params{__always_fire};
+		my %old_state = get_listenable_state($listenable, \%params);
 		$context->run_original($context->params);
-		my %new_state = get_listenable_state($listenable, \%event_params);
+		my %new_state = get_listenable_state($listenable, \%params);
 
 		return if
+			!$always_fire &&
 			keys %old_state &&
 			is_equal_state(\%old_state, \%new_state);
 
@@ -71,7 +77,7 @@ sub remove_listener ($$$) {
 			last;
 		}
 	}
-	croak ";istener not found: [$event_name, $listener]"
+	croak "listener not found: [$event_name, $listener]"
 		if $oldSize == @$listeners;
 }
 
@@ -86,14 +92,21 @@ sub fire_event {
 
 sub notify_listener {
 	my ($listener, $event) = @_;
+	local $_;
 	my $clone = $event->clone;
 	my $method_name;
 	if (ref $listener eq 'CODE') {
 		&$listener($clone);
 	} elsif (ref $listener eq 'ARRAY') {
+		my $o = $listener->[1];
+		return unless defined $o; # could be a dead weak ref
 		$method_name = $listener->[0];
-		$listener->[1]->$method_name($clone);
+		my @params = $listener->[2]?
+			map { $event->$_ } @{$listener->[2]}:
+			($clone);
+		$o->$method_name(@params);
 	} else {
+		return unless defined $listener; # could be a dead weak ref
 		$method_name = 'handle_event_'. $event->name;
 		$listener->$method_name($clone);
 	}
@@ -175,6 +188,7 @@ sub clone {
 
 sub as_string {
 	my $self = shift;
+	local $_;
 	return join ', ', map { "$_:$self->{$_}" } sort keys %$self;
 }
 
@@ -229,6 +243,8 @@ Aspect::Library::Listenable - Observer pattern with events
   
   $point->set_color('red');
   # prints: "name:Color, source:Point, color:red, old_color:blue, params:red"
+
+  $point->set_color('red'); # does not print anything, color unchanged
   
   remove_listener $point, Color => $color_listener;
   
@@ -272,7 +288,7 @@ listenable are called, registered listeners will be notified.
 
 Some examples of use are:
 
-=over4
+=over 4
 
 =item *
 
@@ -290,7 +306,7 @@ any event of any model.
 
 The Listenable pattern is a variation of the basic Observer pattern:
 
-=over4
+=over 4
 
 =item 1
 
@@ -326,7 +342,7 @@ This is similar to how methods and classes are defined only once.
 Each listenable relationship between classes is defined by one aspect,
 answering 3 questions:
 
-=over4
+=over 4
 
 =item 1
 
@@ -352,7 +368,7 @@ You create a listenable aspect so:
 The C<EVENT_DATA> part is optional. The three parameters are your answers
 to the questions above:
 
-=over4
+=over 4
 
 =item EVENT_NAME
 
@@ -400,7 +416,7 @@ Because the aspect should be created only I<Once> during a program run,
 for each listenable relationship type, there are several options for
 choosing the place to actually create it:
 
-=over4
+=over 4
 
 =item *
 
@@ -427,7 +443,7 @@ someone, and not just fired into the void.
 
 =head2 ADDING AND REMOVING LISTENERS
 
-The simplest listener is a C<CODE> ref, and is added and removed like this:
+The simplest listener is a C<CODE> ref. It can added and removed so:
 
   use Aspect::Library::Listenable;
   my $code = sub { print "event!" }
@@ -436,9 +452,11 @@ The simplest listener is a C<CODE> ref, and is added and removed like this:
   remove_listener $point, Color => $code; # remove
   $point->set_color('yellow');            # event will not fire
 
+The event object is the only parameter received by the callback.
+
 The other two types of listeners are I<object>, and I<method>:
 
-=over4
+=over 4
 
 =item 1
 
@@ -460,12 +478,35 @@ When the listener is an array ref (method listener), the method name
 type of listener, you do not remove the array ref but the listener
 object, i.e. exactly like you remove an object listener.
 
+For method listeners, you can also change the parameter list of the
+method. Usually, the event is the only parameter to the listener method.
+By changing the parameter list, you can turn any existing method into a
+listener method, without changing it.
+
+You change the parameter list, by providing a list of event properties,
+whose values will become the new parameter list. Here is how to make a
+C<Family::set_father_name> run each time C<Person::set_name> is called on
+the father object:
+
+  aspect Listenable => (
+     NameChange => call 'Person::set_name',
+     name => 'name',
+  );
+
+  $father = Person->new;
+  $family = Family->new;
+
+  add_listener $father, NameChange =>
+     [set_father_name => $family, [qw(name)]];
+
+  $father->set_name('dan'); # $family->set_father_name('dan') will be called
+
 =head2 HANDLING EVENTS
 
 Listener code is called with one parameter: the event. Its class is
 C<Aspect::Listenable::Event>. All events have at least these properties:
 
-=over4
+=over 4
 
 =item name
 
@@ -498,7 +539,7 @@ a point after a C<Color> event:
 
 =head1 CAVEATS
 
-=over4
+=over 4
 
 =item *
 

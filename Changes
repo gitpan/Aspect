@@ -1,5 +1,18 @@
 Revision history for Perl extension Aspect.
 
+0.12 Fri Mar 24 2007
+
+    - You can now attach advice to subs in main:: package, see
+      Advice tests
+    - Made everything easier to install by including dependencies
+      required for testing
+    - Added __always_fire option to Listenable
+    - Listenable: You can now let listeners receive any parameters, not
+      just the event, see the test object_listener
+    - Modified our hack on Hook::LexWrap so it does not ignore
+      prototypes, see Advice tests
+    - Removed old warning from Makefile.PL
+
 0.11 Thu Aug 3 2004
 
     - Fixed problem in upgrading from 0.08, CPAN.pm was getting confused

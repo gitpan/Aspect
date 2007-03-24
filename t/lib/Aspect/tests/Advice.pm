@@ -4,11 +4,15 @@ use strict;
 use warnings;
 use Carp;
 use Test::More;
+use Test::Exception;
+# must prefix demo class name with underscore, so that weaver will
+# not exclude it as a core aspect class
+use _Aspect::tests::Advice::Foo;
 use Aspect;
 
 use base qw(Test::Class);
 
-my $Demo_Class = 'Aspect_Advice_Foo';
+my $Demo_Class = '_Aspect::tests::Advice::Foo';
 my $Subject;
 
 sub setup: Test(setup) { $Subject = $Demo_Class->new }
@@ -19,7 +23,6 @@ sub call_pointcut: Test(10) {
 	is $Subject->inc(2), 3, 'inc not yet installed';
 	{
 		my @advice;
-
 		push @advice, before { shift->return_value('bar') }
 			call "${Demo_Class}::foo";
 		is $Subject->foo, 'bar', 'a before advice changing return_value';
@@ -40,15 +43,14 @@ sub call_pointcut: Test(10) {
 	}
 	{
 		my @advice;
-
 		push @advice, after
 			{ my $c = shift; $c->return_value($c->params->[1]) }
-				call 'Aspect_Advice_Foo::foo';
+				call "${Demo_Class}::foo";
 		is $Subject->foo('baz'), 'baz', 'an after advice accessing params';
 
 		push @advice, before
 			{ my $p = shift->params; splice @$p, 1, 1, $p->[1] x 2 }
-				call 'Aspect_Advice_Foo::foo';
+				call "${Demo_Class}::foo";
 		is $Subject->foo('baz'), 'bazbaz', 'same but with a before advice';
 	}
 	is $Subject->foo, 'foo', 'foo uninstalled';
@@ -70,14 +72,18 @@ sub cflow_pointcut: Test(6) {
 	is $Subject->foo, 'foo', 'foo cflow uninstalled';
 }
 
-# -----------------------------------------------------------------------------
+sub function_in_main: Test {
+	my $advice = before { shift->return_value('wrapped') }
+		call 'main::advice_tests_func_no_proto';
+	is main::advice_tests_func_no_proto('foo'), 'wrapped';
+}
 
-package Aspect_Advice_Foo;
-
-sub new { bless {}, shift }
-sub foo { 'foo'           }
-sub bar { shift->foo      }
-sub inc { $_[1] + 1       }
-
+sub function_in_main_with_prototype: Test(2) {
+	my $advice = before { shift->return_value('wrapped') }
+		call 'main::advice_tests_func_with_proto';
+	is main::advice_tests_func_with_proto('foo'), 'wrapped', 'can wrap';
+	eval 'main::advice_tests_func_with_proto(1, 2)';
+	like $@, qr/Too many arguments/, 'prototypes are obeyed';
+}
 
 1;

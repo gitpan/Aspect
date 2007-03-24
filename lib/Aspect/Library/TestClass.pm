@@ -78,6 +78,10 @@ class of the IUT:
 
   sub subject_class { 'MyApp::Person' }
 
+=head1 REQUIRES
+
+Only works with C<Test::Class> above version C<0.06_05>.
+  
 =head1 SEE ALSO
 
 See the L<Aspect|::Aspect> pods for a guide to the Aspect module.

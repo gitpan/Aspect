@@ -10,4 +10,3 @@ CVS/.*
 ^Makefile\.[a-z]+$
 ^pm_to_blib$
 \.err$
-^doc\/.*$

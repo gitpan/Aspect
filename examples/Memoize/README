@@ -4,9 +4,8 @@
 
 Shows how to memoize a set of subs using a regular expression. Two
 calibrators are created, and some colors are calibrated on them. We
-use several sets of parameters to demo that Memoize is correctly
-keying by them.
-
+use several sets of parameters to demo that Memoize is using keys
+correctly.
 
 Sample output:
 

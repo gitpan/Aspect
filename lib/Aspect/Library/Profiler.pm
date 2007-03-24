@@ -18,7 +18,7 @@ sub get_advice {
 
 package Benchmark::Timer::ReportOnDestroy;
 use base qw(Benchmark::Timer);
-sub DESTROY { shift->report }
+sub DESTROY { print scalar shift->reports }
 
 1;
 

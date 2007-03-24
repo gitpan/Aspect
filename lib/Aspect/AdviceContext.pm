@@ -49,6 +49,8 @@ sub params {
 	return $self;
 }
 
+sub params_ref { shift->{'params'} }
+
 sub self { shift->{params}->[0] }
 
 sub package_name {

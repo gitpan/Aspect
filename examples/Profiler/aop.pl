@@ -5,7 +5,7 @@ use warnings;
 use Aspect;
 
 aspect Profiler =>
-	call qr/^SlowObject::[^:]+$/ &
+	call qr/^SlowObject::/ &
 	cflow run => 'SlowObject::run';
 
 my $slow_object = SlowObject->new;
@@ -15,7 +15,7 @@ print "This example will complete in 4 seconds...\n";
 # these calls will be profiled
 $slow_object->run;
 
-# but this will not, because they are not in the call flow of SlowObject::run
+# but this will not, because it is not in the call flow of SlowObject::run
 $slow_object->slow;
 
 # -----------------------------------------------------------------------------

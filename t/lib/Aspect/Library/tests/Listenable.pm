@@ -114,16 +114,33 @@ sub die_on_none_hash_based_listenable: Test {
 		qr/not a hash based object/;
 }
 
+sub object_listener: Test(2) {
+	my $self = shift;
+	my $point = $Demo_Class->new;
+	add_listener $point, Erase => [do_call =>
+		my $listener = Aspect_Library_Listenable_Listener->new,
+		[qw(source)],
+	];
+	ok !$listener->has_been_called, 'before erased';
+	$point->set_erased;
+	is $listener->has_been_called, $point, 'after erased';
+	remove_listener $point, Erase => $listener;
+}
+
 # test helper classes ---------------------------------------------------------
 
 package Aspect_Library_Listenable_Point;
-
-sub new { bless {color => 'blue', erased => 0}, shift }
-
+sub new        { bless {color => 'blue', erased => 0}, shift }
 sub get_erased { shift->{erased} }
 sub set_erased { shift->{erased} = 1 }
+sub get_color  { shift->{color} }
+sub set_color  { shift->{color} = pop }
 
-sub get_color { shift->{color} }
-sub set_color { shift->{color} = pop }
+
+package Aspect_Library_Listenable_Listener;
+sub new             { bless {has_been_called => 0}, shift }
+sub do_call         { shift->{has_been_called} = pop }
+sub has_been_called { shift->{has_been_called} }
+
 
 1;

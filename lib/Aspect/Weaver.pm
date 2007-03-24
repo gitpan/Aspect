@@ -14,11 +14,13 @@ my %UNTOUCHABLES = map { $_ => 1 } qw(
 sub new { bless {}, shift }
 
 sub get_sub_names {
+	local $_;
 	# TODO: need to filter Aspect exportable functions!
-	map  { Devel::Symdump->new($_)->functions }
-	grep { !/^Aspect::/ }
-	grep { !$UNTOUCHABLES{$_} }
-	Devel::Symdump->rnew->packages;
+	return
+		map  { Devel::Symdump->new($_)->functions }
+		grep { !/^Aspect::/ }
+		grep { !$UNTOUCHABLES{$_} }
+		(Devel::Symdump->rnew->packages, 'main');
 }
 
 sub install {

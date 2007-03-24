@@ -12,7 +12,7 @@ use overload
 	'&'  => sub { Aspect::Pointcut::AndOp->new(@_) },
 	'|'  => sub { Aspect::Pointcut::OrOp ->new(@_) },
 	'!'  => sub { Aspect::Pointcut::NotOp->new(@_) },
-	'""' => sub { Dumper [@_] };
+	'""' => sub { Dumper shift };
 
 sub new {
 	my ($class, @spec) = @_;
@@ -21,6 +21,7 @@ sub new {
 	return $self;
 }
 
+# TODO: if it is 'eq' we can jusy grab it
 sub match {
 	my ($self, $spec, $sub_name) = @_;
 	return
