@@ -200,8 +200,6 @@ sub as_string {
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Library::Listenable - Observer pattern with events

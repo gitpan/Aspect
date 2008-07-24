@@ -10,7 +10,7 @@ use Aspect::Pointcut::Call;
 use Aspect::Pointcut::Cflow;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 
 use base 'Exporter';

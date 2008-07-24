@@ -45,8 +45,6 @@ sub is_test_method_with_subject {
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Library::TestClass - give Test::Class test methods an IUT

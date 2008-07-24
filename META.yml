@@ -21,4 +21,4 @@ requires:
   Devel::Symdump: 0
   Test::Class: 0
   perl: 5.8.2
-version: 0.13
+version: 0.14

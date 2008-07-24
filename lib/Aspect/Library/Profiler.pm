@@ -28,8 +28,6 @@ sub DESTROY { print scalar shift->reports }
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Library::Profiler - reusable method call profiling aspect

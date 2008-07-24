@@ -788,8 +788,6 @@ for my $meth (  qw(
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Algorithm::Diff - Compute `intelligent' differences between two files / lists

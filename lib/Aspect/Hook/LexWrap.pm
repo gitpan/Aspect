@@ -99,8 +99,6 @@ use overload
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Hook::LexWrap - Lexically scoped subroutine wrappers

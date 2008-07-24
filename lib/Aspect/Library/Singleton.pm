@@ -32,8 +32,6 @@ sub get_advice {
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Library::Singleton - A singleton aspect

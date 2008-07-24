@@ -24,8 +24,6 @@ sub get_advice {}
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Modular - base class for reusable aspects

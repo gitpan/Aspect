@@ -31,8 +31,6 @@ sub get_advice {
 
 __END__
 
-{% USE p = PodGenerated %}
-
 =head1 NAME
 
 Aspect::Library::Memoize - cross-cutting memoization
