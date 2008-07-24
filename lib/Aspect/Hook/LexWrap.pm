@@ -1,9 +1,14 @@
 package Aspect::Hook::LexWrap;
 
-our $VERSION = '0.20';
+use strict;
+use warnings;
 use 5.006;
 use Carp::Heavy; # added by eilara as hack around caller() core dump
 use Carp;
+
+
+our $VERSION = '0.13';
+
 
 *CORE::GLOBAL::caller = sub {
         my ($height) = ($_[0]||0);
@@ -18,13 +23,17 @@ use Carp;
         }
 };
 
-sub import { *{caller()."::wrap"} = \&wrap }
+{
+    no strict 'refs';
+    sub import { *{caller()."::wrap"} = \&wrap }
+}
 
 sub wrap (*@) {
 	my ($typeglob, %wrapper) = @_;
 	$typeglob = (ref $typeglob || $typeglob =~ /::/)
 		? $typeglob
 		: caller()."::$typeglob";
+    no strict 'refs';
 	my $original = ref $typeglob eq 'CODE' && $typeglob
 		     || *$typeglob{CODE}
 		     || croak "Can't wrap non-existent subroutine ", $typeglob;
@@ -35,6 +44,7 @@ sub wrap (*@) {
 	my ($caller, $unwrap) = *CORE::GLOBAL::caller{CODE};
 	my $prototype = prototype($original)? '('. prototype($original). ')': '';
 	# any way to set prototypes other than eval?
+    my $imposter;
 	eval '$imposter = sub '. $prototype. q{{
 			if ($unwrap) { goto &$original }
 			my ($return, $prereturn);
@@ -89,6 +99,7 @@ use overload
 
 __END__
 
+{% USE p = PodGenerated %}
 
 =head1 NAME
 

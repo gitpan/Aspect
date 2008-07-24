@@ -1,11 +1,17 @@
-require 5.008002;
-use ExtUtils::MakeMaker;
+use inc::Module::Install;
+include 'Module::AutoInstall';
 
-WriteMakefile(
-	NAME          => 'Aspect',
-	ABSTRACT      => 'AOP for Perl',
-	VERSION_FROM  => 'lib/Aspect.pm',
-	AUTHOR        => 'Ran Eilam <eilara@cpan.org>',
-	dist          => {COMPRESS => 'gzip --force --best'},
-	PREREQ_PM     => {Devel::Symdump => 2.03},
-);
+name 'Aspect';
+all_from 'lib/Aspect.pm';
+perl_version '5.008002';
+
+requires 'Benchmark::Timer';
+requires 'Devel::Symdump';
+requires 'Test::Class';
+
+build_requires 'Test::More' => '0.70';
+build_requires 'Test::Compile';
+
+auto_install;
+auto_include;
+WriteAll;

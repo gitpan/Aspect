@@ -96,7 +96,7 @@ sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
 	$proto = {} unless ref($proto);
-	my $self = bless {%$proto, @_}, $class;
+	my $self = bless { %$proto, @_ }, $class;
 	$_Test{$self} = dclone($Tests);
 	return($self);
 };

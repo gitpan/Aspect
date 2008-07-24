@@ -8,6 +8,10 @@ use Aspect::Pointcut::OrOp;
 use Aspect::Pointcut::NotOp;
 use Data::Dumper;
 
+
+our $VERSION = '0.13';
+
+
 use overload
 	'&'  => sub { Aspect::Pointcut::AndOp->new(@_) },
 	'|'  => sub { Aspect::Pointcut::OrOp ->new(@_) },
@@ -37,7 +41,11 @@ sub init {}
 sub match_define { 1 }
 sub match_run    { 1 }
 
+
 1;
+
+
+__END__
 
 =head1 NAME
 
@@ -61,4 +69,35 @@ C<!>, C<&> and C<|>.
 
 See the L<Aspect|::Aspect> pod for a guide to the Aspect module.
 
+=head1 BUGS AND LIMITATIONS
+
+No bugs have been reported.
+
+Please report any bugs or feature requests through the web interface at
+L<http://rt.cpan.org>.
+
+=head1 INSTALLATION
+
+See perlmodinstall for information and options on installing Perl modules.
+
+=head1 AVAILABILITY
+
+The latest version of this module is available from the Comprehensive Perl
+Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
+site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
+
+=head1 AUTHORS
+
+Marcel GrE<uuml>nauer, C<< <marcel@cpan.org> >>
+
+Ran Eilam C<< <eilara@cpan.org> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2001 by Marcel GrE<uuml>nauer
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
 =cut
+

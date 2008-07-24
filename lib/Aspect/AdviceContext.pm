@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use Carp;
 
+
+our $VERSION = '0.13';
+
+
 sub new {
 	my ($class, %spec) = @_;
 	croak "cannot create with no sub_name" unless $spec{sub_name};
@@ -97,6 +101,8 @@ sub get_value {
 }
 
 1;
+
+__END__
 
 =head1 NAME
 
@@ -204,6 +210,36 @@ The aspect library for example (e.g. L<Aspect::Library::Wormhole>).
 
 L<Aspect::Advice> creates the main C<AdviceContext>, and
 C<Aspect::Pointcut::Cflow> creates contexts for each matched call flow.
+
+=head1 BUGS AND LIMITATIONS
+
+No bugs have been reported.
+
+Please report any bugs or feature requests through the web interface at
+L<http://rt.cpan.org>.
+
+=head1 INSTALLATION
+
+See perlmodinstall for information and options on installing Perl modules.
+
+=head1 AVAILABILITY
+
+The latest version of this module is available from the Comprehensive Perl
+Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
+site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
+
+=head1 AUTHORS
+
+Marcel GrE<uuml>nauer, C<< <marcel@cpan.org> >>
+
+Ran Eilam C<< <eilara@cpan.org> >>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2001 by Marcel GrE<uuml>nauer
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =cut
 

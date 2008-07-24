@@ -131,7 +131,7 @@ sub escape($);
 	      $_ = ord;
 	      exists $escapes{$_}
 		  ? $escapes{$_}
-		  : sprintf( "\\x{%04x}", $_ ) ;
+		  : sprintf( "\\x{"."%04x}", $_ ) ;  # kludge: avoid template start_tag
 	  } split //, shift ;
       }
 

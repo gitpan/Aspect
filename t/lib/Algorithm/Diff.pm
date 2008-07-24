@@ -783,8 +783,12 @@ for my $meth (  qw(
     *{$Obj."::".$meth} = \&{$meth};
 }
 
+
 1;
+
 __END__
+
+{% USE p = PodGenerated %}
 
 =head1 NAME
 
