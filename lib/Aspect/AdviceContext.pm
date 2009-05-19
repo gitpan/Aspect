@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 sub new {
@@ -103,6 +103,8 @@ sub get_value {
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 

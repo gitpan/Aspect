@@ -7,7 +7,7 @@ use Memoize;
 use Aspect;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base 'Aspect::Modular';
@@ -30,6 +30,8 @@ sub get_advice {
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 

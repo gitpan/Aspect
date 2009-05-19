@@ -1,44 +1,54 @@
 package Aspect;
 
-require 5.008002;
-
+use 5.008002;
 use strict;
 use warnings;
-use Carp;
-use Aspect::Advice;
-use Aspect::Pointcut::Call;
-use Aspect::Pointcut::Cflow;
+use Carp                    'croak';
+use Exporter                ();
+use Aspect::Advice          ();
+use Aspect::Pointcut::Call  ();
+use Aspect::Pointcut::Cflow ();
 
-
-our $VERSION = '0.14';
-
-
-use base 'Exporter';
-
-
+our $VERSION = '0.16';
+our @ISA     = 'Exporter';
 our @EXPORT  = qw(aspect before after call cflow);
 
-my (@Aspect_Store, @Advice_Store);
+# Internal data storage
+my @Aspect_Store = undef;
+my @Advice_Store = undef;
 
 sub aspect {
 	my ($name, @params) = @_;
 	$name = "Aspect::Library::$name";
 	runtime_use($name);
 	my $aspect = $name->new(@params);
-	# if called in void context, aspect is for life
+
+	# If called in void context, aspect is for life
 	push @Aspect_Store, $aspect unless defined wantarray;
+
 	return $aspect;
 }
 
-sub call   ($)  { Aspect::Pointcut::Call ->new(@_) }
-sub cflow  ($$) { Aspect::Pointcut::Cflow->new(@_) }
+sub call ($) {
+	Aspect::Pointcut::Call->new(@_);
+}
 
-sub before (&$) { advice(before => @_) }
-sub after  (&$) { advice(after  => @_) }
+sub cflow ($$) {
+	Aspect::Pointcut::Cflow->new(@_);
+}
+
+sub before (&$) {
+	advice( before => @_ );
+}
+
+sub after (&$) {
+	advice( after  => @_ );
+}
 
 sub advice {
 	my $advice = Aspect::Advice->new(@_);
-	# if called in void context, advice is for life
+
+	# If called in void context, advice is for life
 	push @Advice_Store, $advice unless defined wantarray;
 	return $advice;
 }
@@ -49,15 +59,15 @@ sub runtime_use {
 	croak "Cannot use [$package]: $@" if $@;
 }
 
-
 1;
-
 
 __END__
 
+=pod
+
 =head1 NAME
 
-Aspect - AOP for Perl
+Aspect - Aspect-oriented programming (AOP) for Perl
 
 =head1 SYNOPSIS
 
@@ -94,23 +104,22 @@ Aspect - AOP for Perl
 
 =head1 DESCRIPTION
 
-Aspect-oriented Programming (AOP) is a programming method developed by
-Xerox PARC and others. The basic idea is that in complex class systems
-there are certain aspects or behaviors that cannot normally be expressed
-in a coherent, concise and precise way. One example of such aspects are
-design patterns, which combine various kinds of classes to produce a
-common type of behavior. Another is logging. See L<http://www.aosd.net>
-for more info.
+Aspect-oriented Programming (AOP) is a programming method developed by Xerox
+PARC and others. The basic idea is that in complex class systems there are
+certain aspects or behaviors that cannot normally be expressed in a coherent,
+concise and precise way. One example of such aspects are design
+patterns, which combine various kinds of classes to produce a common
+type of behavior. Another is logging. See L<http://www.aosd.net> for
+more info.
 
 The Perl C<Aspect> module closely follows the terminology of the AspectJ
-project (L<http://eclipse.org/aspectj>). However due to the dynamic
-nature of the Perl language, several C<AspectJ> features are useless for
-us: exception softening, mixin support, out-of-class method declarations,
-and others.
+project (L<http://eclipse.org/aspectj>). However due to the dynamic nature of
+the Perl language, several C<AspectJ> features are useless for us: exception
+softening, mixin support, out-of-class method declarations, and others.
 
-The Perl C<Aspect> module is focused on subroutine matching and wrapping.
-It allows you to select collections of subroutines using a flexible
-pointcut language, and modify their behavior in any way you want.
+The Perl C<Aspect> module is focused on subroutine matching and wrapping.  It
+allows you to select collections of subroutines using a flexible pointcut
+language, and modify their behavior in any way you want.
 
 =head1 TERMINOLOGY 
 
@@ -118,17 +127,17 @@ pointcut language, and modify their behavior in any way you want.
 
 =item Join Point
 
-An event that occurs during the running of a program. Currently only
-calls to subroutines are recognized as join points.
+An event that occurs during the running of a program. Currently only calls to
+subroutines are recognized as join points.
 
 =item Pointcut
 
-An expression that selects a collection of join points. For example: all
-calls to the class C<Person>, that are in the call flow of some
-C<Company>, but I<not> in the call flow of C<Company::make_report>.
-C<Aspect> supports C<call()>, and C<cflow()> pointcuts, and logical
-operators (C<&>, C<|>, C<!>) for constructing more complex pointcuts. See
-the L<Aspect::Pointcut> documentation.
+An expression that selects a collection of join points. For example: all calls
+to the class C<Person>, that are in the call flow of some C<Company>, but
+I<not> in the call flow of C<Company::make_report>.  C<Aspect> supports
+C<call()>, and C<cflow()> pointcuts, and logical operators (C<&>, C<|>, C<!>)
+for constructing more complex pointcuts. See the L<Aspect::Pointcut>
+documentation.
 
 =item Advice
 
@@ -137,8 +146,8 @@ before or after the matched sub is run.
 
 =item Advice Code
 
-The code that is run before or after a pointcut is matched. It can modify
-the way that the matched sub is run, and the value it returns.
+The code that is run before or after a pointcut is matched. It can modify the
+way that the matched sub is run, and the value it returns.
 
 =item Weave
 
@@ -148,8 +157,8 @@ goes out of scope.
 
 =item The Aspect
 
-An object that installs advice. A way to package advice and other Perl
-code, so that it is reusable.
+An object that installs advice. A way to package advice and other Perl code,
+   so that it is reusable.
 
 =back
 
@@ -165,15 +174,15 @@ Create and remove pointcuts, advice, and aspects.
 
 Flexible pointcut language: select subs to match using string equality,
 regexp, or C<CODE> ref. Match currently running sub, or a sub in the call
-flow. Build pointcuts composed of a logical expression of other
-pointcuts, using conjunction, disjunction, and negation.
+flow. Build pointcuts composed of a logical expression of other pointcuts,
+using conjunction, disjunction, and negation.
 
 =item *
 
-In advice code, you can: modify parameter list for matched sub, modify
-return value, decide if to proceed to matched sub, access C<CODE> ref for
-matched sub, and access the context of any call flow pointcuts that were
-matched, if they exist.
+In advice code, you can: modify parameter list for matched sub, modify return
+value, decide if to proceed to matched sub, access C<CODE> ref for matched
+sub, and access the context of any call flow pointcuts that were matched, if
+they exist.
 
 =item *
 
@@ -182,54 +191,53 @@ aspect objects, is the scope of their effect.
 
 =item *
 
-A reusable aspect library. The L<Wormhole|Aspect::Library::Wormhole>,
-aspect, for example. A base class makes it easy to create your own
-reusable aspects. The L<Memoize|Aspect::Library::Memoize> aspect is an
-example of how to interface with APOish modules from CPAN.
+A reusable aspect library. The L<Wormhole|Aspect::Library::Wormhole>, aspect,
+for example. A base class makes it easy to create your own reusable aspects.
+The L<Memoize|Aspect::Library::Memoize> aspect is an example of how to
+interface with AOP-like modules from CPAN.
 
 =back
 
 =head1 WHY
 
-Perl is a highly dynamic language, where everything this module does can
-be done without too much difficulty. All this module does, is make it
-even easier, and bring these features under one consistent interface. I
-have found it useful in my work in several places:
+Perl is a highly dynamic language, where everything this module does can be
+done without too much difficulty. All this module does, is make it even
+easier, and bring these features under one consistent interface. I have found
+it useful in my work in several places:
 
 =over
 
 =item *
 
-Saves me from typing an entire line of code for almost every
-C<Test::Class> test method, because I use the
-L<TestClass|Aspect::Library::TestClass> aspect.
+Saves me from typing an entire line of code for almost every C<Test::Class>
+test method, because I use the L<TestClass|Aspect::Library::TestClass> aspect.
 
 =item *
 
-I use the L<Wormhole|Aspect::Library::Wormhole> aspect, so that my
-methods can aquire implicit context, and so I don't need to pass too many
-parameters all over the place. Sure I could do it with C<caller()> and
-C<Hook::LexWrap>, but this is much easier.
+I use the L<Wormhole|Aspect::Library::Wormhole> aspect, so that my methods can
+acquire implicit context, and so I don't need to pass too many parameters all
+over the place. Sure I could do it with C<caller()> and C<Hook::LexWrap>, but
+this is much easier.
 
 =item *
 
 Using custom advice to modify class behavior: register objects when
-constructors are called, save object state on changes to it, etc. All
-this, while cleanly separating these concerns from the effected class.
-They exist as an independant aspect, so the class remains unpoluted.
+constructors are called, save object state on changes to it, etc. All this,
+while cleanly separating these concerns from the effected class. They exist
+as an independent aspect, so the class remains unpolluted.
 
 =back
 
-The C<Aspect> module is different from C<Hook::Lexwrap> (which it uses
-for the actual wrapping) in two respects:
+The C<Aspect> module is different from C<Hook::Lexwrap> (which it uses for the
+actual wrapping) in two respects:
 
 =over
 
 =item *
 
-Select join points using flexible pointcut language instead of the sub
-name. For example: select all calls to C<Account> objects that are in the
-call flow of C<Company::make_report>.
+Select join points using flexible pointcut language instead of the sub name.
+For example: select all calls to C<Account> objects that are in the call flow
+of C<Company::make_report>.
 
 =item *
 
@@ -240,106 +248,103 @@ original sub, or append parameters to it.
 
 =head1 USING
 
-This package is a facade on top of the Perl AOP framework. It allows you
-to create pointcuts, advice, and aspects. You will be mostly working with
-this package (C<Aspect>), and the L<advice
-context|Aspect::AdviceContext> package.
+This package is a facade on top of the Perl AOP framework. It allows you to
+create pointcuts, advice, and aspects. You will be mostly working with this
+package (C<Aspect>), and the L<advice context|Aspect::AdviceContext> package.
 
 When you use this package:
 
-  use Aspect;
+use Aspect;
 
-You will import five subs: C<call()>, C<cflow()>, C<before()>,
-C<after()>, and C<aspect()>. These are all factories that allow you to
-create pointcuts, advice, and aspects.
+You will import five subs: C<call()>, C<cflow()>, C<before()>, C<after()>, and
+C<aspect()>. These are all factories that allow you to create pointcuts,
+advice, and aspects.
 
 =head2 POINTCUTS
 
-Poincuts select join points, so that an advice can run code when they
-happen. The simplest pointcut is C<call()>. For example:
+Pointcuts select join points, so that an advice can run code when they happen.
+The simplest pointcut is C<call()>. For example:
 
   $p = call 'Person::get_address';
 
 Selects the calling of C<Person::get_address()>, as defined in the symbol
-table during weave-time. The string is a pointcut spec, and can be
-expressed in three ways:
+table during weave-time. The string is a pointcut spec, and can be expressed
+in three ways:
 
 =over
 
-=item string
+=item C<string>
 
 Select only the sub whose name is equal to the spec string.
 
-=item regexp
+=item C<regexp>
 
-Select only the subs whose name matches the regexp. The following will
-match all the subs defined on the C<Person> class, but not on
-the C<Person::Address> class.
+Select only the subs whose name matches the regexp. The following will match
+all the subs defined on the C<Person> class, but not on the C<Person::Address>
+class.
 
   $p = call qr/^Person::\w+$/;
 
 =item C<CODE> ref
 
-Select only subs, where the supplied code, when run with the sub name as
-only parameter, returns true. The following will match all calls to
-subs whose name isa key in the hash C<%subs_to_match>:
+Select only subs, where the supplied code, when run with the sub name as only
+parameter, returns true. The following will match all calls to subs whose name
+isa key in the hash C<%subs_to_match>:
 
   $p = call sub { exists $subs_to_match{shift()} }
 
 =back
 
-Pointcuts can be combined to form logical expressions, because they
-overload C<&>, C<|>, and C<!>, with factories that create composite
-pointcut objects. Be careful not to use the non-overloadable C<&&>, and
-C<||> operators, because you will get no error message.
+Pointcuts can be combined to form logical expressions, because they overload
+C<&>, C<|>, and C<!>, with factories that create composite pointcut objects.
+Be careful not to use the non-overloadable C<&&>, and C<||> operators, because
+you will get no error message.
 
 Select all calls to C<Person>, which are not calls to the constructor:
 
   $p = call qr/^Person::\w+$/ & !call 'Person::create';
 
-The second pointcut you can use, is C<cflow()>. It selects only the subs
-that are in call flow of its spec. Here we select all calls to C<Person>,
-only if they are in the call flow of some method in C<Company>:
+The second pointcut you can use, is C<cflow()>. It selects only the subs that
+are in call flow of its spec. Here we select all calls to C<Person>, only if
+they are in the call flow of some method in C<Company>:
 
   $p = call qr/^Person::\w+$/ & cflow company => qr/^Company::\w+$/;
 
-The C<cflow()> pointcut takes two parameters: a context key, and a
-pointcut spec. The context key is used in advice code to access the
-context (params, sub name, etc.) of the sub found in the call flow. In
-the example above, the key can be used to access the name of the specific
-sub on C<Company> that was found in the call flow of the C<Person>
-method.The second parameter is a pointcut spec, that should match the sub
-required from the call flow.
+The C<cflow()> pointcut takes two parameters: a context key, and a pointcut
+spec. The context key is used in advice code to access the context (params,
+sub name, etc.) of the sub found in the call flow. In the example above, the
+key can be used to access the name of the specific sub on C<Company> that was
+found in the call flow of the C<Person> method.The second parameter is a
+pointcut spec, that should match the sub required from the call flow.
 
 See the L<Aspect::Pointcut> docs for more info.
 
 =head2 ADVICE
 
-An advice is just some definition of code that will run on a match of
-some pointcut. An advice can run before the pointcut matched sub is run,
-or after. You create advice using C<before()>, and C<after()>. These take
-a C<CODE> ref, and a pointcut, and install the code on the subs that
-match the pointcut. For example:
+An advice is just some definition of code that will run on a match of some
+pointcut. An advice can run before the pointcut matched sub is run, or after.
+You create advice using C<before()>, and C<after()>. These take a C<CODE> ref,
+and a pointcut, and install the code on the subs that match the pointcut.  For
+example:
 
   after { print "Person::get_address has returned!\n" }
      call 'Person::get_address';
 
-The advice code is run with one parameter: the advice context. You use it
-to learn how the matched sub was run, modify parameters, return value,
-and if it is run at all. You also use the advice context to access any
-context objects that were created by any matching C<cflow()> pointcuts.
-This will print the name of the C<Company> that started the call flow
-which evetually reached C<Person::get_address()>:
+The advice code is run with one parameter: the advice context. You use it to
+learn how the matched sub was run, modify parameters, return value, and if it
+is run at all. You also use the advice context to access any context objects
+that were created by any matching C<cflow()> pointcuts.  This will print the
+name of the C<Company> that started the call flow which eventually reached
+C<Person::get_address()>:
 
   before { print shift->company->name }
      call 'Person::get_address' & cflow company => qr/^Company::w+$/;
 
-See the L<Aspect::AdviceContext> docs for some more examples of advice
-code.
+See the L<Aspect::AdviceContext> docs for some more examples of advice code.
 
-Advice code is applied to matching pointcuts (i.e. the advice is enabled)
-as long as the advice object is in scope. This allows you to neatly
-control enabling and disabling of advice:
+Advice code is applied to matching pointcuts (i.e. the advice is enabled) as
+long as the advice object is in scope. This allows you to neatly control
+enabling and disabling of advice:
 
   {
      my $advice = before { print "called!\n" } $pointcut;
@@ -348,40 +353,39 @@ control enabling and disabling of advice:
   # the advice is now disabled
 
 If the advice is created in void context, it remains enabled until the
-interperter dies, or the symbol table reloaded.
+interpreter dies, or the symbol table reloaded.
 
 =head2 ASPECTS
 
 Aspects are just plain old Perl objects, that install advice, and do
-other AOPish things, like install methods on other classes, or mess
-around with the inheritance hierarchy of other classes. A good base class
-for them is L<Aspect::Modular>, but you can use any Perl object.
+other AOP-like things, like install methods on other classes, or mess around
+with the inheritance hierarchy of other classes. A good base class for them is
+L<Aspect::Modular>, but you can use any Perl object.
 
-If the aspect class exists in the package C<Aspect::Library>, then it can
-be easily created:
+If the aspect class exists in the package C<Aspect::Library>, then it can be
+easily created:
 
   aspect Singleton => 'Company::create';
 
-Will create an L<Aspect::Library::Singleton> object. This reusable aspect
-is included in the C<Aspect> distribution, and forces singleton behavior
-on some constructor, in this case, C<Company::create()>.
+Will create an L<Aspect::Library::Singleton> object. This reusable aspect is
+included in the C<Aspect> distribution, and forces singleton behavior on some
+constructor, in this case, C<Company::create()>.
 
 Such aspects, like advice, are enabled as long as they are in scope.
 
 =head1 INTERNALS
 
-Due to the dynamic nature of Perl, and thanks to C<Hook::LexWrap>, there
-is no need for processing of source or byte code, as required in the Java
-and .NET worlds.
+Due to the dynamic nature of Perl, and thanks to C<Hook::LexWrap>, there is no
+need for processing of source or byte code, as required in the Java and .NET
+worlds.
 
-The implementation is very simple: when you create advice, its pointcut
-is matched using C<match_define()>. Every sub defined in the symbol table
-is matched against the pointcut. Those that match, will get a special
-wrapper installed, using C<Hook::LexWrap>. The wrapper only runs if
-during run-time, the C<match_run()> of the pointcut returns true.
+The implementation is very simple: when you create advice, its pointcut is
+matched using C<match_define()>. Every sub defined in the symbol table is
+matched against the pointcut. Those that match, will get a special wrapper
+installed, using C<Hook::LexWrap>. The wrapper only runs if during run-time,
+the C<match_run()> of the pointcut returns true.
 
-The wrapper code creates an advice context, and gives it to the advice
-code.
+The wrapper code creates an advice context, and gives it to the advice code.
 
 The C<call()> pointcut is static, so C<match_run()> always returns true,
 and C<match_define()> returns true if the sub name matches the pointcut
@@ -393,9 +397,7 @@ matches the pointcut spec.
 
 =head1 LIMITATIONS
 
-=over
-
-=item Inheritance Support
+=head2 Inheritance Support
 
 Support for inheritance is lacking. Consider the following two classes:
 
@@ -424,7 +426,7 @@ advice code on symbol table entries. C<Van::compute_mileage> does not
 have one, so nothing happens. Until this is solved, you have to do the
 thinking about inheritance yourself.
 
-=item Performance
+=head2 Performance
 
 You may find it very easy to shoot yourself in the foot with this module.
 Consider this advice:
@@ -444,41 +446,143 @@ solution is to narrow the pointcut:
   before { print shift->sub_name }
      call qr/^MyApp::/ & cflow company => 'MyApp::Company::make_report';
 
-=back
+=head1 TO DO
 
-See the C<TODO> file in the distribution for possible solutions.
+There are a number of things that could be added, if people have an interest
+in contributing to the project.
+
+=head1 Documentation
+
+* cookbook
+
+* tutorial
+
+* example of refactoring a useful CPAN module using aspects
+
+=head2 Pointcuts
+
+* new pointcuts: execution, cflowbelow, within, advice, calledby. Sure
+  you can implement them today with Perl treachery, but it is too much
+  work.
+
+* need a way to match subs with an attribute, attributes::get()
+  will not work for some reason
+
+* isa() support for method pointcuts as Gaal Yahas suggested: match
+  methods on class hierarchies without callbacks
+
+* Perl join points: phasic- BEGIN/INIT/CHECK/END 
+
+* The previous items indicate a need for a real join point specification
+  language
+
+=head2 Weaving
+
+* look into byte code manipulation with B:: modules- could be faster, no
+  need to mess with caller, and could add many more pointcut types. All
+  we need to do for sub pointcuts is add 2 gotos to selected subs.
+
+* use Sub::Uplevel instead of Hook::LexWrap caller trick, thus we will
+  will play nice with other modules that use Sub::Uplevel (e.g. all the
+  test modules seem to use it)
+
+* a debug flag to print out subs that were matched on match_define
+
+* warnings when over 1000 methods wrapped
+
+* support more pulling (vs. pushing) of aspects into packages:
+  attributes, package specific join points
+ 
+* add whatever constructs required for mocking packages, objects,
+  builtins
+
+* debugger support: break on pointcut
+
+* allow finer control of advice execution order
+
+=head2 Reusable Aspects
+
+* need better example for wormhole- something less tedius
+
+* bring back Marcel's tracing aspect and example, class invariants
+  example
+
+* use Scalar-Footnote for adding aspect state to objects, e.g. in
+  Listenable. Problem is it is still in developer release state
+
+* Listenable: when listeners go out of scope, they should be removed from
+  listenables, so you don't have to remember to remove them manually
+
+* Listenable: should overload some operator on listenables so that it is 
+  easier to add/remove listeners, e.g.:
+    $button += (click => sub { print 'click!' });
+
+* design aspects: DBC, threading, more GOF patterns
+
+* middleware aspects: security, load balancing, timeout/retry, distribution
+
+* Perl aspects: add use strict/warning/Carp to all matched packages.
+  Actually, Spiffy, Toolkit, and Toolset do this already very nicely.
+
+* interface with existing Perl modules for logging, tracing, param
+  checking, generally all things that are AOPish on CPAN. One should
+  be able to use it all through one consistent interface. If I have a
+  good set of pointcuts, I should be able to do all kinds of cross-
+  cutting things with them.
+
+* UnderscoreContext aspect: subs that match will, if called with no
+  parameters, get $_, and if in void context, return value will set $_.
+  Allows you to use your subs like builtins, that fall back on $_. So if
+  we have a sub:
+
+     sub replace_foo { my $in = shift; $in =~ s/foo/bar; $in }
+
+  Then both calls would be equivalent:
+
+     $_ = replace_foo($_);
+     replace_foo;
+
+* a generic FriendParamAppender aspect, that adds to a param list
+  for affected methods, any object the method requires. Heuristics
+  are applied to find the friend: maybe it is available in the call
+  flow? Perhaps someone in the call flow has an accessor that can
+  get it? Maybe a lexical in some sub in the call flow has it? The
+  point is to cover all cases where we pass objects around, so that
+  we don't have to. A generalization of the wormhole aspect.
+
+=head1 SUPPORT
+
+Please report any bugs or feature requests through the web interface at
+L<http://rt.cpan.org/Public/Dist/Display.html?Name=Aspect>.
+
+=head1 INSTALLATION
+
+See L<perlmodinstall> for information and options on installing Perl modules.
+
+=head1 AVAILABILITY
+
+The latest version of this module is available from the Comprehensive Perl
+Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
+site near you. Or see L<http://search.cpan.org/perldoc?Aspsect.pm>.
+
+=head1 AUTHORS
+
+Marcel GrE<uuml>nauer E<lt>marcel@cpan.orgE<gt>
+
+Ran Eilam E<lt>eilara@cpan.orgE<gt>
+
+Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
 =head1 SEE ALSO
 
 You can find AOP examples in the C<examples/> directory of the
 distribution.
 
-=head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.
-
-=head1 INSTALLATION
-
-See perlmodinstall for information and options on installing Perl modules.
-
-=head1 AVAILABILITY
-
-The latest version of this module is available from the Comprehensive Perl
-Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
-site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
-
-=head1 AUTHORS
-
-Marcel GrE<uuml>nauer, C<< <marcel@cpan.org> >>
-
-Ran Eilam C<< <eilara@cpan.org> >>
-
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2001 by Marcel GrE<uuml>nauer
+
+Some parts copyright 2009 Adam Kennedy.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

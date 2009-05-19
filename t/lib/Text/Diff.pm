@@ -433,7 +433,7 @@ Returns "" for all methods (other than C<new()>).
 
 =over
 
-=item file_header
+=item C<file_header>
 
     $s = Text::Diff::Unified->file_header( $options );
 
@@ -465,7 +465,7 @@ sub Text::Diff::Unified::file_header {
     );
 }
 
-=item hunk_header
+=item C<hunk_header>
 
     Text::Diff::Unified->hunk_header( \@ops, $options );
 

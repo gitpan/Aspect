@@ -2,7 +2,7 @@ package Test::Builder::Tester;
 
 use strict;
 use vars qw(@EXPORT $VERSION @ISA);
-$VERSION = "1.01";
+$VERSION = "0.16";
 
 use Test::Builder;
 use Symbol;
@@ -160,9 +160,9 @@ These are the six methods that are exported as default.
 
 =over 4
 
-=item test_out
+=item C<test_out>
 
-=item test_err
+=item C<test_err>
 
 Procedures for predeclaring the output that your test suite is
 expected to produce until C<test_test> is called.  These procedures
@@ -204,7 +204,7 @@ sub test_err(@)
     $err->expect(@_)
 }
 
-=item test_fail
+=item C<test_fail>
 
 Because the standard failure message that B<Test::Builder> produces
 whenever a test fails will be a common occurrence in your test error
@@ -242,7 +242,7 @@ sub test_fail
     $err->expect("#     Failed test ($0 at line $line)");
 }
 
-=item test_diag
+=item C<test_diag>
 
 As most of the remaining expected output to the error stream will be
 created by Test::Builder's C<diag> function, B<Test::Builder::Tester>
@@ -282,7 +282,7 @@ sub test_diag
     $err->expect(map {"# $_"} @_)
 }
 
-=item test_test
+=item C<test_test>
 
 Actually performs the output check testing the tests, comparing the
 data (with C<eq>) that we have captured from B<Test::Builder> against
@@ -292,18 +292,18 @@ This takes name/value pairs that effect how the test is run.
 
 =over
 
-=item title (synonym 'name', 'label')
+=item C<title (synonym 'name', 'label')>
 
 The name of the test that will be displayed after the C<ok> or C<not
 ok>.
 
-=item skip_out
+=item C<skip_out>
 
 Setting this to a true value will cause the test to ignore if the
 output sent by the test to the output stream does not match that
 declared with C<test_out>.
 
-=item skip_err
+=item C<skip_err>
 
 Setting this to a true value will cause the test to ignore if the
 output sent by the test to the error stream does not match that
@@ -370,7 +370,7 @@ sub test_test
     }
 }
 
-=item line_num
+=item C<line_num>
 
 A utility function that returns the line number that the function was
 called on.  You can pass it an offset which will be added to the
@@ -396,7 +396,7 @@ call.
 
 =over 4
 
-=item color
+=item C<color>
 
 When C<test_test> is called and the output that your tests generate
 does not match that which you declared, C<test_test> will print out

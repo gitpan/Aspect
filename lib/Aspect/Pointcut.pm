@@ -9,7 +9,7 @@ use Aspect::Pointcut::NotOp;
 use Data::Dumper;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use overload
@@ -41,11 +41,11 @@ sub init {}
 sub match_define { 1 }
 sub match_run    { 1 }
 
-
 1;
 
-
 __END__
+
+=pod
 
 =head1 NAME
 

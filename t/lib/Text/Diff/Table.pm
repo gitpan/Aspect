@@ -56,11 +56,11 @@ Here's why the lines do or do not have whitespace escaped:
 
 =over
 
-=item lines 1, 4, 7 don't differ, no need.
+=item C<lines 1, 4, 7 don't differ, no need.>
 
-=item lines 2, 3 differ in non-whitespace, no need.
+=item C<lines 2, 3 differ in non-whitespace, no need.>
 
-=item lines 5, 6, 8, 9 all have subtle ws changes.
+=item C<lines 5, 6, 8, 9 all have subtle ws changes.>
 
 =back
 

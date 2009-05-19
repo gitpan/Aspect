@@ -6,7 +6,7 @@ use Carp;
 use Aspect;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base 'Aspect::Modular';
@@ -20,6 +20,8 @@ sub get_advice {
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -158,4 +160,3 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-

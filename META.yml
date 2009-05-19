@@ -1,24 +1,32 @@
---- 
-abstract: AOP for Perl
-author: 
-  - Marcel GrE<uuml>nauer, C<< <marcel@cpan.org> >>
-build_requires: 
-  Test::Compile: 0
+---
+abstract: 'Aspect-oriented programming (AOP) for Perl'
+author:
+  - 'Marcel GrE<uuml>nauer <marcel@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::Class: 0.28
   Test::More: 0.70
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: Module::Install version 0.68
+generated_by: 'Module::Install version 0.88'
 license: perl
-meta-spec: 
-  url: http://module-build.sourceforge.net/META-spec-v1.3.html
-  version: 1.3
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+module_name: Aspect
 name: Aspect
-no_index: 
-  directory: 
+no_index:
+  directory:
+    - examples
     - inc
     - t
-requires: 
-  Benchmark::Timer: 0
-  Devel::Symdump: 0
-  Test::Class: 0
+    - xt
+requires:
+  Devel::Symdump: 2.04
   perl: 5.8.2
-version: 0.14
+resources:
+  ChangeLog: http://fisheye2.atlassian.com/changelog/cpan/trunk/Aspect
+  license: http://dev.perl.org/licenses/
+  repository: http://svn.ali.as/cpan/trunk/Aspect
+version: 0.16

@@ -10,7 +10,7 @@ use Scalar::Util qw(weaken);
 use Aspect;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base qw(Aspect::Modular Exporter);
@@ -199,6 +199,8 @@ sub as_string {
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -514,15 +516,15 @@ C<Aspect::Listenable::Event>. All events have at least these properties:
 
 =over 4
 
-=item name
+=item C<name>
 
 The name of the event as defined in the aspect.
 
-=item source
+=item C<source>
 
 The listenable object.
 
-=item params
+=item C<params>
 
 The event was fired because a method was called. In this property you
 will find an array ref of the parameters sent to that method.

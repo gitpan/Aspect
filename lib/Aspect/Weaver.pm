@@ -7,7 +7,7 @@ use Aspect::Hook::LexWrap;
 use Devel::Symdump;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 my %UNTOUCHABLES = map { $_ => 1 } qw(
@@ -35,11 +35,11 @@ sub install {
 		$code;
 }
 
-
 1;
 
-
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -93,4 +93,3 @@ This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =cut
-

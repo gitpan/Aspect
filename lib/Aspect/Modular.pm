@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 # creating --------------------------------------------------------------------
@@ -23,6 +23,8 @@ sub get_advice {}
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 

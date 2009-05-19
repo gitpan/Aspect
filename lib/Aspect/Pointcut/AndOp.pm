@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base 'Aspect::Pointcut::BinOp';
@@ -17,6 +17,8 @@ sub binop { $_[1] && $_[2] }
 
 
 __END__
+
+=pod
 
 =head1 NAME
 

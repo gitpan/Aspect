@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base 'Aspect::Pointcut';
@@ -40,6 +40,8 @@ sub binop { die "Must be implemented by subclass" }
 
 
 __END__
+
+=pod
 
 =head1 NAME
 

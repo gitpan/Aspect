@@ -6,7 +6,7 @@ use Carp;
 use Aspect::AdviceContext;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 use base 'Aspect::Pointcut';
@@ -60,6 +60,8 @@ sub caller_info {
 
 
 __END__
+
+=pod
 
 =head1 NAME
 

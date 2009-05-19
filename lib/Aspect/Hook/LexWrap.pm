@@ -7,7 +7,7 @@ use Carp::Heavy; # added by eilara as hack around caller() core dump
 use Carp;
 
 
-our $VERSION = '0.13';
+our $VERSION = '0.16';
 
 
 *CORE::GLOBAL::caller = sub {
@@ -99,6 +99,8 @@ use overload
 
 __END__
 
+=pod
+
 =head1 NAME
 
 Aspect::Hook::LexWrap - Lexically scoped subroutine wrappers
@@ -124,3 +126,5 @@ See the L<Aspect|::Aspect> pods for a guide to the Aspect module.
       Copyright (c) 2001, Damian Conway. All Rights Reserved.
     This module is free software. It may be used, redistributed
         and/or modified under the same terms as Perl itself.
+
+=cut

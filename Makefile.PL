@@ -1,17 +1,6 @@
-use inc::Module::Install;
-include 'Module::AutoInstall';
+use inc::Module::Install::DSL 0.88;
 
-name 'Aspect';
-all_from 'lib/Aspect.pm';
-perl_version '5.008002';
-
-requires 'Benchmark::Timer';
-requires 'Devel::Symdump';
-requires 'Test::Class';
-
-build_requires 'Test::More' => '0.70';
-build_requires 'Test::Compile';
-
-auto_install;
-auto_include;
-WriteAll;
+all_from      lib/Aspect.pm
+requires      Devel::Symdump 2.04
+test_requires Test::Class    0.28
+test_requires Test::More     0.70
