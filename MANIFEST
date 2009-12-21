@@ -41,6 +41,7 @@ MANIFEST			This list of files
 META.yml
 README
 t/01_all.t
+t/02_caller.t
 t/97_meta.t
 t/98_pod.t
 t/99_pmv.t
@@ -59,7 +60,6 @@ t/lib/Aspect/Pointcut/tests/Cflow.pm
 t/lib/Aspect/tests/Advice.pm
 t/lib/Aspect/tests/AdviceContext.pm
 t/lib/Aspect/tests/Weaver.pm
-t/lib/Sub/Uplevel.pm
 t/lib/Test/Builder/Tester.pm
 t/lib/Test/Builder/Tester/Color.pm
 t/lib/Test/Class.pm
