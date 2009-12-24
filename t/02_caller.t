@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 
 use strict;
-use warnings;
-use Test::More tests => 8;
+BEGIN {
+	$|  = 1;
+	$^W = 1;
+}
+use Test::More tests => 10;
+use Test::NoWarnings;
 use Aspect;
 
 my @CALLER = ();
@@ -29,6 +33,7 @@ SCOPE: {
 # Set up the Aspect
 my $aspect = before { $BEFORE++ } call 'Bar::bar';
 isa_ok( $aspect, 'Aspect::Advice' );
+isa_ok( $aspect, 'Aspect::Advice::Before' );
 is( $BEFORE,         0, '$BEFORE is false' );
 is( scalar(@CALLER), 0, '@CALLER is empty' );
 

@@ -5,12 +5,14 @@ use warnings;
 use Carp;
 use Test::Class;
 use Aspect;
+use Aspect::Modular ();
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
+our @ISA     = 'Aspect::Modular';
 
-use base 'Aspect::Modular';
-
-sub Test::Class::make_subject { shift->subject_class->new(@_) }
+sub Test::Class::make_subject {
+	shift->subject_class->new(@_);
+}
 
 sub get_advice {
 	my ($self, $pointcut) = @_;
