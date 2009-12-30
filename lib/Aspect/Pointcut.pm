@@ -9,7 +9,7 @@ use Aspect::Pointcut::AndOp;
 use Aspect::Pointcut::OrOp;
 use Aspect::Pointcut::NotOp;
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 
 use overload
@@ -47,6 +47,11 @@ my %UNTOUCHABLE = map { $_ => 1 } qw(
 sub match_all {
 	my $self    = shift;
 	my @matches = ();
+
+	# Temporary hack to avoid a ton of warnings.
+	# Remove when Devel::Symdump stops throwing warnings.
+	local $^W = 0;
+
 	foreach my $package ( Devel::Symdump->rnew->packages, 'main' ) {
 		next if $UNTOUCHABLE{$package};
 		next if $package =~ /^Aspect::/;
@@ -55,6 +60,7 @@ sub match_all {
 			push @matches, $name if $self->match_define($name);
 		}
 	}
+
 	return @matches;
 }
 

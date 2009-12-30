@@ -22,7 +22,7 @@ lib/Aspect/Advice.pm
 lib/Aspect/Advice/After.pm
 lib/Aspect/Advice/Before.pm
 lib/Aspect/AdviceContext.pm
-lib/Aspect/Hook/LexWrap.pm
+lib/Aspect/Cleanup.pm
 lib/Aspect/Library/Listenable.pm
 lib/Aspect/Library/Memoize.pm
 lib/Aspect/Library/Singleton.pm
