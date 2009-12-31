@@ -7,7 +7,7 @@ use Aspect::AdviceContext  ();
 use Aspect::Advice::After  ();
 use Aspect::Advice::Before ();
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 sub new {
 	my $class = "Aspect::Advice::" . ucfirst($_[1]); # Yes, a bit hacky
@@ -17,14 +17,14 @@ sub new {
 	);
 
 	# Install and save the lexical hook
-	$self->{hook} = $self->install;
+	$self->{hook} = $self->_install;
 
 	return $self;
 }
 
 # private ---------------------------------------------------------------------
 
-sub install {
+sub _install {
 	die("Method 'install' is not implemented by " . ref($_[0]));
 }
 
@@ -38,6 +38,11 @@ sub code {
 
 sub pointcut {
 	$_[0]->{pointcut};
+}
+
+# Release the symbol table hooks via the closure controller
+sub DESTROY {
+	$_[0]->{hook}->() if $_[0]->{hook};
 }
 
 1;

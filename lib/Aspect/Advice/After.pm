@@ -8,10 +8,9 @@ use warnings;
 use Carp::Heavy     (); 
 use Carp            ();
 use Sub::Uplevel    ();
-use Aspect::Cleanup ();
 use Aspect::Advice  ();
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 our @ISA     = 'Aspect::Advice';
 
 sub new {
@@ -25,7 +24,7 @@ sub type {
 	return 'after';
 }
 
-sub install {
+sub _install {
 	my $self     = shift;
 	my $pointcut = $self->pointcut;
 	my $code     = $self->code;
@@ -78,7 +77,7 @@ sub install {
 					type         => 'after',
 					pointcut     => $pointcut,
 					sub_name     => $name,
-					# wantarray    => $wantarray,
+					wantarray    => $wantarray,
 					params       => \@_,
 					return_value => $return,
 					original     => $original,
@@ -109,7 +108,7 @@ sub install {
 					type         => 'after',
 					pointcut     => $pointcut,
 					sub_name     => $name,
-					# wantarray    => $wantarray,
+					wantarray    => $wantarray,
 					params       => \@_,
 					return_value => $return,
 					original     => $original,
@@ -132,22 +131,25 @@ sub install {
 					type         => 'after',
 					pointcut     => $pointcut,
 					sub_name     => $name,
-					# wantarray    => $wantarray,
+					wantarray    => $wantarray,
 					params       => \@_,
 					return_value => undef,
 					original     => $original,
 				);
 
 				# Execute the advice code
-				my $dummy = &$code($context);
+				&$code($context);
 				return;
 			}
 		}};
 		die $@ if $@;
 	}
 
-	# Return the lexical hook
-	return Aspect::Cleanup->new( sub { $out_of_scope = 1 } );
+	# Return the lexical descoping hook.
+	# This MUST be stored and run at DESTROY-time by the
+	# parent object calling _install. This is less bullet-proof
+	# than the DESTROY-time self-executing blessed coderef
+	return sub { $out_of_scope = 1 };
 }
 
 1;
