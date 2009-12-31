@@ -30,7 +30,6 @@ lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
 lib/Aspect/Pointcut.pm
 lib/Aspect/Pointcut/AndOp.pm
-lib/Aspect/Pointcut/BinOp.pm
 lib/Aspect/Pointcut/Call.pm
 lib/Aspect/Pointcut/Cflow.pm
 lib/Aspect/Pointcut/NotOp.pm

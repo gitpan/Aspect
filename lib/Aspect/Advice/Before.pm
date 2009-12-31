@@ -9,19 +9,8 @@ use Carp::Heavy     ();
 use Carp            ();
 use Aspect::Advice  ();
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 our @ISA     = 'Aspect::Advice';
-
-sub new {
-	my $class = shift;
-	return bless { @_ }, $class;
-}
-
-# This should never be called by our own code.
-# It only exists for back-compatibility purposes.
-sub type {
-	return 'before';
-}
 
 sub _install {
 	my $self     = shift;

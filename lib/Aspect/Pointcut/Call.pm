@@ -5,16 +5,16 @@ use warnings;
 use Carp;
 use Aspect::Pointcut ();
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 our @ISA     = 'Aspect::Pointcut';
 
-sub init {
-	shift->{spec} = pop;
+sub new {
+	bless [ $_[1] ], $_[0];
 }
 
 sub match_define {
-	my ($self, $sub_name) = @_;
-	return $self->match($self->{spec}, $sub_name);
+	my $self = shift;
+	return $self->match( $self->[0], @_ );
 }
 
 1;

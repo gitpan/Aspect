@@ -1,7 +1,7 @@
 ---
 abstract: 'Aspect-oriented programming (AOP) for Perl'
 author:
-  - 'Marcel GrE<uuml>nauer <marcel@cpan.org>'
+  - 'Adam Kennedy <adamk@cpan.org>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
   Test::Class: 0.33
@@ -32,4 +32,4 @@ resources:
   ChangeLog: http://fisheye2.atlassian.com/changelog/cpan/trunk/Aspect
   license: http://dev.perl.org/licenses/
   repository: http://svn.ali.as/cpan/trunk/Aspect
-version: 0.25
+version: 0.26
