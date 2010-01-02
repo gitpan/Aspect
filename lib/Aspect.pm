@@ -21,7 +21,7 @@ use Aspect::Advice          ();
 use Aspect::Pointcut::Call  ();
 use Aspect::Pointcut::Cflow ();
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 our @ISA     = 'Exporter';
 our @EXPORT  = qw{ aspect before after call cflow };
 
@@ -609,7 +609,7 @@ distribution.
 
 Copyright 2001 by Marcel GrE<uuml>nauer
 
-Some parts copyright 2009 Adam Kennedy.
+Some parts copyright 2009 - 2010 Adam Kennedy.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
