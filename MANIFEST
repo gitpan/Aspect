@@ -1,6 +1,4 @@
 Changes
-examples/Memoize/aop.pl
-examples/Memoize/README
 examples/Singleton/aop.pl
 examples/Singleton/oop.pl
 examples/Singleton/README
@@ -25,7 +23,6 @@ lib/Aspect/Advice/Before.pm
 lib/Aspect/AdviceContext.pm
 lib/Aspect/Library/Listenable.pm
 lib/Aspect/Library/Listenable/Event.pm
-lib/Aspect/Library/Memoize.pm
 lib/Aspect/Library/Singleton.pm
 lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
