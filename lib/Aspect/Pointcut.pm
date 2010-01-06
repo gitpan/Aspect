@@ -2,20 +2,22 @@ package Aspect::Pointcut;
 
 use strict;
 use warnings;
-use Carp;
-use Data::Dumper            ();
 use Devel::Symdump          ();
 use Aspect::Pointcut::OrOp  ();
 use Aspect::Pointcut::AndOp ();
 use Aspect::Pointcut::NotOp ();
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 
 use overload (
-	'|'  => sub { Aspect::Pointcut::OrOp->new(@_)  },
-	'&'  => sub { Aspect::Pointcut::AndOp->new(@_) },
-	'!'  => sub { Aspect::Pointcut::NotOp->new(@_) },
-	'""' => sub { Data::Dumper::Dumper shift       },
+	# Keep traditional boolification and stringification
+	'bool' => sub () { 1 },
+	'""'   => sub { ref $_[0] },
+
+	# Overload bitwise boolean operators to perform logical transformations.
+	'|'    => sub { Aspect::Pointcut::OrOp->new($_[0],  $_[1]) },
+	'&'    => sub { Aspect::Pointcut::AndOp->new($_[0], $_[1]) },
+	'!'    => sub { Aspect::Pointcut::NotOp->new($_[0])        },
 );
 
 # Default constructor takes a simple list of params
@@ -36,8 +38,28 @@ sub match {
 # weaving methods -------------------------------------------------------------
 
 my %UNTOUCHABLE = map { $_ => 1 } qw(
-	attributes base fields lib strict warnings Carp Carp::Heavy Config CORE
-	CORE::GLOBAL DB DynaLoader Exporter Exporter::Heavy IO IO::Handle UNIVERSAL
+	Carp
+	Carp::Heavy
+	Config
+	CORE
+	CORE::GLOBAL
+	DB
+	DB::fake
+	DynaLoader
+	Exporter
+	Exporter::Heavy
+	IO
+	IO::Handle
+	Regexp
+	UNIVERSAL
+	attributes
+	base
+	feature
+	fields
+	lib
+	strict
+	warnings
+	warnings::register
 );
 
 # Find the list of all matching subs
@@ -61,11 +83,20 @@ sub match_all {
 	return @matches;
 }
 
-# template methods ------------------------------------------------------------
+sub match_define {
+	my $class = ref $_[0] || $_[0];
+	die("Method 'match_define' not implemented in class '$class'");
+}
 
-sub match_define { 1 }
+sub match_run {
+	my $class = ref $_[0] || $_[0];
+	die("Method 'match_run' not implemented in class '$class'");
+}
 
-sub match_run    { 1 }
+sub curry_run {
+	my $class = ref $_[0] || $_[0];
+	die("Method 'curry' not implemented in class '$class'");
+}
 
 1;
 

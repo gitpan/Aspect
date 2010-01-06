@@ -1,4 +1,4 @@
-package Aspect::Advice::Before;
+package Aspect::Advice::Around;
 
 use strict;
 use warnings;
@@ -65,7 +65,7 @@ sub _install {
 			# Prepare the context object
 			my \$wantarray = wantarray;
 			my \$context   = Aspect::AdviceContext->new(
-				type         => 'before',
+				type         => 'around',
 				pointcut     => \$pointcut,
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
@@ -80,14 +80,9 @@ sub _install {
 				# Run the advice code
 				() = &\$code(\$context);
 
-				if ( \$context->proceed ) {
-					\@_ = \$context->params;
-					goto &\$original;
-				}
-
 				# Don't run the original
 				my \$rv = \$context->return_value;
-				if ( \$rv eq 'ARRAY' ) {
+				if ( ref \$rv eq 'ARRAY' ) {
 					return \@\$rv;
 				} else {
 					return ( \$rv );
@@ -102,14 +97,7 @@ sub _install {
 				&\$code(\$context);
 			}
 
-			# Do they want to shortcut?
-			unless ( \$context->proceed ) {
-				return \$context->return_value;
-			}
-
-			# Continue onwards to the original function
-			\@_ = \$context->params;
-			goto &\$original;
+			return \$context->return_value;
 		};
 END_PERL
 	}

@@ -4,7 +4,6 @@ author:
   - 'Adam Kennedy <adamk@cpan.org>'
 build_requires:
   ExtUtils::MakeMaker: 6.42
-  Test::Class: 0.33
   Test::Exception: 0.27
   Test::More: 0.70
   Test::NoWarnings: 0.084
@@ -27,9 +26,10 @@ no_index:
 requires:
   Devel::Symdump: 2.04
   Sub::Uplevel: 0.2002
+  Task::Weaken: 0
   perl: 5.8.2
 resources:
   ChangeLog: http://fisheye2.atlassian.com/changelog/cpan/trunk/Aspect
   license: http://dev.perl.org/licenses/
   repository: http://svn.ali.as/cpan/trunk/Aspect
-version: 0.27
+version: 0.28

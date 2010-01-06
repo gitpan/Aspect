@@ -6,7 +6,7 @@ use Carp                  ();
 use Aspect::Pointcut      ();
 use Aspect::AdviceContext ();
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 our @ISA     = 'Aspect::Pointcut';
 
 sub new {
@@ -19,6 +19,17 @@ sub new {
 		runtime_context_key => $_[0],
 		spec                => $_[1],
 	}, $class;
+}
+
+# The cflow pointcuts do not curry at all.
+# So they don't need to clone, and can be used directly.
+sub curry_run {
+	return $_[0];
+}
+
+# To make cflow work we need to hook (sadly) everything
+sub match_define {
+	return 1;
 }
 
 sub match_run {

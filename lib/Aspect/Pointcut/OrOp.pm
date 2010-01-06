@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Pointcut ();
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 our @ISA     = 'Aspect::Pointcut';
 
 sub new {
@@ -12,18 +12,39 @@ sub new {
 	bless [ @_ ], $class;
 }
 
+sub curry_run {
+	my $self = shift;
+
+	# Reduce our children to the subset which themselves do not curry
+	my @children = grep { $_->curry_run } @$self;
+
+	# If none are left, curry us away to nothing
+	return unless @children;
+
+	# If only one remains, curry us away to just that child
+	if ( @children == 1 ) {
+		return $children[0];
+	}
+
+	# Create our clone to hold the curried subset
+	my $class = ref($self);
+	return $class->new( @children );
+}
+
 sub match_define {
 	my $self = shift;
-	$self->[0]->match_define(@_)
-	||
-	$self->[1]->match_define(@_)
+	foreach ( @$self ) {
+		return 1 if $_->match_define(@_);
+	}
+	return;
 }
 
 sub match_run {
 	my $self = shift;
-	$self->[0]->match_run(@_)
-	||
-	$self->[1]->match_run(@_);
+	foreach ( @$self ) {
+		return 1 if $_->match_run(@_);
+	}
+	return;
 }
 
 1;
