@@ -1,5 +1,5 @@
 ---
-abstract: 'Aspect-oriented programming (AOP) for Perl'
+abstract: 'Aspect-Oriented Programming (AOP) for Perl'
 author:
   - 'Adam Kennedy <adamk@cpan.org>'
 build_requires:
@@ -32,4 +32,4 @@ resources:
   ChangeLog: http://fisheye2.atlassian.com/changelog/cpan/trunk/Aspect
   license: http://dev.perl.org/licenses/
   repository: http://svn.ali.as/cpan/trunk/Aspect
-version: 0.30
+version: 0.31

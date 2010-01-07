@@ -1,15 +1,18 @@
 NAME
-    Aspect - Aspect-oriented programming (AOP) for Perl
+    Aspect - Aspect-Oriented Programming (AOP) for Perl
 
 SYNOPSIS
       package Person;
       
   sub create      { ... }
-      sub set_name    { ... }
-      sub get_address { ... }
+      
+  sub set_name    { ... }
+      
+  sub get_address { ... }
       
   package main;
-      use Aspect;
+      
+  use Aspect;
       
   # Using reusable aspects
       aspect Singleton => 'Person::create';        # let there be only one Person
@@ -50,7 +53,7 @@ SYNOPSIS
       } call 'Bank::Account::balance';
 
 DESCRIPTION
-    Aspect-oriented Programming (AOP) is a programming method developed by
+    Aspect-Oriented Programming (AOP) is a programming method developed by
     Xerox PARC and others. The basic idea is that in complex class systems
     there are certain aspects or behaviors that cannot normally be expressed
     in a coherent, concise and precise way. One example of such aspects are
@@ -476,6 +479,12 @@ AUTHORS
 SEE ALSO
     You can find AOP examples in the "examples/" directory of the
     distribution.
+
+    Aspect::Library::Memoize
+
+    Aspect::Library::Profiler
+
+    Aspect::Library::Trace
 
 COPYRIGHT AND LICENSE
     Copyright 2001 by Marcel Grünauer

@@ -29,7 +29,7 @@ use Aspect::Pointcut::AndOp ();
 use Aspect::Pointcut::OrOp  ();
 use Aspect::Pointcut::NotOp ();
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 our @ISA     = 'Exporter';
 our @EXPORT  = qw{ aspect around before after call cflow };
 
@@ -113,17 +113,20 @@ __END__
 
 =head1 NAME
 
-Aspect - Aspect-oriented programming (AOP) for Perl
+Aspect - Aspect-Oriented Programming (AOP) for Perl
 
 =head1 SYNOPSIS
 
   package Person;
   
   sub create      { ... }
+  
   sub set_name    { ... }
+  
   sub get_address { ... }
   
   package main;
+  
   use Aspect;
   
   # Using reusable aspects
@@ -166,7 +169,7 @@ Aspect - Aspect-oriented programming (AOP) for Perl
 
 =head1 DESCRIPTION
 
-Aspect-oriented Programming (AOP) is a programming method developed by Xerox
+Aspect-Oriented Programming (AOP) is a programming method developed by Xerox
 PARC and others. The basic idea is that in complex class systems there are
 certain aspects or behaviors that cannot normally be expressed in a coherent,
 concise and precise way. One example of such aspects are design
@@ -220,7 +223,7 @@ goes out of scope.
 =item The Aspect
 
 An object that installs advice. A way to package advice and other Perl code,
-   so that it is reusable.
+so that it is reusable.
 
 =back
 
@@ -653,6 +656,12 @@ Ran Eilam E<lt>eilara@cpan.orgE<gt>
 
 You can find AOP examples in the C<examples/> directory of the
 distribution.
+
+L<Aspect::Library::Memoize>
+
+L<Aspect::Library::Profiler>
+
+L<Aspect::Library::Trace>
 
 =head1 COPYRIGHT AND LICENSE
 
