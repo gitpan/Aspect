@@ -32,7 +32,7 @@ SYNOPSIS
           print "g/set will soon be called";
       } $pointcut;
       
-  # Advice will live forever, because it is created in void context 
+  # Advice will live lexical, because it is created in void context 
       after {
           print "g/set has just been called";
       } $pointcut;

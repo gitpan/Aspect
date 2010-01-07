@@ -7,7 +7,7 @@ use Aspect::Pointcut::OrOp  ();
 use Aspect::Pointcut::AndOp ();
 use Aspect::Pointcut::NotOp ();
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 use overload (
 	# Keep traditional boolification and stringification
@@ -73,7 +73,7 @@ sub match_all {
 
 	foreach my $package ( Devel::Symdump->rnew->packages, 'main' ) {
 		next if $UNTOUCHABLE{$package};
-		next if $package =~ /^Aspect::/;
+		next if $package =~ /^Aspect\b/;
 		foreach my $name ( Devel::Symdump->new($package)->functions ) {
 			# TODO: Need to filter Aspect exportable functions!
 			push @matches, $name if $self->match_define($name);
