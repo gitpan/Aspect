@@ -41,8 +41,10 @@ t/01_compile.t
 t/02_advice_context.t
 t/11_pointcut_call.t
 t/12_pointcut_cflow.t
-t/21_advice.t
+t/21_advice_around.t
 t/22_advice_around.t
+t/23_advice_before.t
+t/24_advice_after.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
 t/33_feature_exception.t
@@ -55,11 +57,7 @@ t/listenable.t
 t/singleton.t
 t/wormhole.t
 xt/compile.t
-xt/kwalitee.t
-xt/perl_critic.t
-xt/perlcriticrc
 xt/pod.t
-xt/pod_coverage.t
 xt/podspell.t
 xt/portability_files.t
 xt/synopsis.t
