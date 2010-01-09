@@ -18,6 +18,7 @@ inc/Module/Install/WriteAll.pm
 lib/Aspect.pm
 lib/Aspect/Advice.pm
 lib/Aspect/Advice/After.pm
+lib/Aspect/Advice/AfterReturning.pm
 lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
 lib/Aspect/AdviceContext.pm
@@ -45,6 +46,7 @@ t/21_advice_around.t
 t/22_advice_around.t
 t/23_advice_before.t
 t/24_advice_after.t
+t/25_advice_after_returning.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
 t/33_feature_exception.t

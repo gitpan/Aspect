@@ -1,4 +1,4 @@
-package Aspect::Advice::Before;
+package Aspect::Advice::AfterReturning;
 
 use strict;
 use warnings;
@@ -7,12 +7,16 @@ use warnings;
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
 use Carp::Heavy           (); 
 use Carp                  ();
+use Sub::Uplevel          ();
 use Aspect::Advice        ();
 use Aspect::AdviceContext ();
 
 our $VERSION = '0.34';
 our @ISA     = 'Aspect::Advice';
 
+# NOTE: To simplify debugging of the generated code, all injected string
+# fragments will be defined in $UPPERCASE, and all lexical variables to be
+# accessed via the closure will be in $lowercase.
 sub _install {
 	my $self     = shift;
 	my $pointcut = $self->pointcut;
@@ -36,7 +40,7 @@ sub _install {
 	# installed Aspect.
 	# If the advice is going to last lexical then we don't need to
 	# check or use the $out_of_scope variable.
-	my $out_of_scope = undef;
+	my $out_of_scope   = undef;
 	my $MATCH_DISABLED = $lexical ? '$out_of_scope' : '0';
 
 	# Find all pointcuts that are statically matched
@@ -61,59 +65,84 @@ sub _install {
 			# Is this a lexically scoped hook that has finished
 			goto &\$original if $MATCH_DISABLED;
 
-			# Apply any runtime-specific context checks
-			my \$runtime = {};
-			goto &\$original unless $MATCH_RUN;
-
-			# Prepare the context object
+			my \$runtime   = {};
 			my \$wantarray = wantarray;
-			my \$context   = Aspect::AdviceContext->new(
-				type         => 'before',
-				pointcut     => \$pointcut,
-				sub_name     => \$name,
-				wantarray    => \$wantarray,
-				params       => \\\@_,
-				return_value => \$wantarray ? [ ] : undef,
-				original     => \$original,
-				proceed      => 1,
-				\%\$runtime,
-			);
-
-			# Array context needs some special return handling
 			if ( \$wantarray ) {
-				# Run the advice code
+				my \$return = [
+					Sub::Uplevel::uplevel(
+						1, \$original, \@_,
+					)
+				];
+				return \@\$return unless $MATCH_RUN;
+
+				# Create the context
+				my \$context = Aspect::AdviceContext->new(
+					type         => 'after_returning',
+					pointcut     => \$pointcut,
+					sub_name     => \$name,
+					wantarray    => \$wantarray,
+					params       => \\\@_,
+					return_value => \$return,
+					original     => \$original,
+					\%\$runtime,
+				);
+
+				# Execute the advice code
 				() = &\$code(\$context);
 
-				if ( \$context->proceed ) {
-					\@_ = \$context->params;
-					goto &\$original;
-				}
-
-				# Don't run the original
-				my \$rv = \$context->return_value;
-				if ( ref \$rv eq 'ARRAY' ) {
-					return \@\$rv;
+				# Get the (potentially) modified return value
+				\$return = \$context->return_value;
+				if ( ref \$return eq 'ARRAY' ) {
+					return \@\$return;
 				} else {
-					return ( \$rv );
+					return ( \$return );
 				}
 			}
 
-			# Scalar and void have the same return handling.
-			# Just run the advice code differently.
 			if ( defined \$wantarray ) {
+				my \$return = Sub::Uplevel::uplevel(
+					1, \$original, \@_,
+				);
+				return \$return unless $MATCH_RUN;
+
+				# Create the context
+				my \$context = Aspect::AdviceContext->new(
+					type         => 'after_returning',
+					pointcut     => \$pointcut,
+					sub_name     => \$name,
+					wantarray    => \$wantarray,
+					params       => \\\@_,
+					return_value => \$return,
+					original     => \$original,
+					\%\$runtime,
+				);
+
+				# Execute the advice code
 				my \$dummy = &\$code(\$context);
-			} else {
-				&\$code(\$context);
-			}
-
-			# Do they want to shortcut?
-			unless ( \$context->proceed ) {
 				return \$context->return_value;
-			}
 
-			# Continue onwards to the original function
-			\@_ = \$context->params;
-			goto &\$original;
+			} else {
+				Sub::Uplevel::uplevel(
+					1, \$original, \@_,
+				);
+				return unless $MATCH_RUN;
+
+				# Create the context
+				my \$context = Aspect::AdviceContext->new(
+					type         => 'after_returning',
+					pointcut     => \$pointcut,
+					sub_name     => \$name,
+					wantarray    => \$wantarray,
+					params       => \\\@_,
+					return_value => undef,
+					original     => \$original,
+					\%\$runtime,
+				);
+
+				# Execute the advice code
+				&\$code(\$context);
+				return;
+			}
 		};
 END_PERL
 	}
