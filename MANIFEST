@@ -19,6 +19,7 @@ lib/Aspect.pm
 lib/Aspect/Advice.pm
 lib/Aspect/Advice/After.pm
 lib/Aspect/Advice/AfterReturning.pm
+lib/Aspect/Advice/AfterThrowing.pm
 lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
 lib/Aspect/AdviceContext.pm
@@ -47,9 +48,9 @@ t/22_advice_around.t
 t/23_advice_before.t
 t/24_advice_after.t
 t/25_advice_after_returning.t
+t/26_advice_after_throwing.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
-t/33_feature_exception.t
 t/97_meta.t
 t/98_pod.t
 t/99_pmv.t
