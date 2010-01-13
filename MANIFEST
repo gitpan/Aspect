@@ -32,6 +32,7 @@ lib/Aspect/Pointcut.pm
 lib/Aspect/Pointcut/And.pm
 lib/Aspect/Pointcut/Call.pm
 lib/Aspect/Pointcut/Cflow.pm
+lib/Aspect/Pointcut/If.pm
 lib/Aspect/Pointcut/Not.pm
 lib/Aspect/Pointcut/Or.pm
 LICENSE
@@ -43,6 +44,7 @@ t/01_compile.t
 t/02_advice_context.t
 t/11_pointcut_call.t
 t/12_pointcut_cflow.t
+t/13_pointcut_if.t
 t/21_advice_around.t
 t/22_advice_around.t
 t/23_advice_before.t
