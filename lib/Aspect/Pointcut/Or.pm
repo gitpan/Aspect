@@ -1,10 +1,10 @@
-package Aspect::Pointcut::OrOp;
+package Aspect::Pointcut::Or;
 
 use strict;
 use warnings;
 use Aspect::Pointcut ();
 
-our $VERSION = '0.35';
+our $VERSION = '0.36';
 our @ISA     = 'Aspect::Pointcut';
 
 sub new {
@@ -55,11 +55,11 @@ __END__
 
 =head1 NAME
 
-Aspect::Pointcut::OrOp - Logical 'or' operation pointcut
+Aspect::Pointcut::Or - Logical 'or' operation pointcut
 
 =head1 SYNOPSIS
 
-    Aspect::Pointcut::OrOp->new;
+    Aspect::Pointcut::Or->new;
 
 =head1 DESCRIPTION
 

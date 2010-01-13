@@ -29,11 +29,11 @@ lib/Aspect/Library/Singleton.pm
 lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
 lib/Aspect/Pointcut.pm
-lib/Aspect/Pointcut/AndOp.pm
+lib/Aspect/Pointcut/And.pm
 lib/Aspect/Pointcut/Call.pm
 lib/Aspect/Pointcut/Cflow.pm
-lib/Aspect/Pointcut/NotOp.pm
-lib/Aspect/Pointcut/OrOp.pm
+lib/Aspect/Pointcut/Not.pm
+lib/Aspect/Pointcut/Or.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
