@@ -22,6 +22,7 @@ lib/Aspect/Advice/AfterReturning.pm
 lib/Aspect/Advice/AfterThrowing.pm
 lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
+lib/Aspect/Advice/Hook.pm
 lib/Aspect/AdviceContext.pm
 lib/Aspect/Library/Breakpoint.pm
 lib/Aspect/Library/Listenable.pm
@@ -37,6 +38,7 @@ lib/Aspect/Pointcut/Highest.pm
 lib/Aspect/Pointcut/If.pm
 lib/Aspect/Pointcut/Not.pm
 lib/Aspect/Pointcut/Or.pm
+lib/Aspect/Pointcut/Wantarray.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
@@ -48,6 +50,7 @@ t/11_pointcut_call.t
 t/12_pointcut_cflow.t
 t/13_pointcut_if.t
 t/14_pointcut_highest.t
+t/15_pointcut_wantarray.t
 t/21_advice_around.t
 t/22_advice_around.t
 t/23_advice_before.t

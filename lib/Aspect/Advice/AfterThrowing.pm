@@ -9,9 +9,10 @@ use Carp::Heavy           ();
 use Carp                  ();
 use Sub::Uplevel          ();
 use Aspect::Advice        ();
+use Aspect::Advice::Hook  ();
 use Aspect::AdviceContext ();
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -61,6 +62,8 @@ sub _install {
 		# Generate the new function
 		no warnings 'redefine';
 		eval <<"END_PERL"; die $@ if $@;
+		package Aspect::Advice::Hook;
+
 		*$NAME = sub $PROTOTYPE {
 			# Is this a lexically scoped hook that has finished
 			goto &\$original if $MATCH_DISABLED;
@@ -75,6 +78,7 @@ sub _install {
 				return \@\$return unless \$\@;
 
 				my \$runtime = {
+					wantarray    => \$wantarray,
 					return_value => \$return,
 					exception    => \$\@,
 				};
@@ -82,12 +86,11 @@ sub _install {
 
 				# Create the context
 				my \$context = Aspect::AdviceContext->new(
-					type         => 'after_throwing',
-					pointcut     => \$pointcut,
-					sub_name     => \$name,
-					wantarray    => \$wantarray,
-					params       => \\\@_,
-					original     => \$original,
+					type     => 'after_throwing',
+					pointcut => \$pointcut,
+					sub_name => \$name,
+					params   => \\\@_,
+					original => \$original,
 					\%\$runtime,
 				);
 
@@ -116,6 +119,7 @@ sub _install {
 				return \$return unless \$\@;
 
 				my \$runtime = {
+					wantarray    => \$wantarray,
 					return_value => \$return,
 					exception    => \$\@,
 				};
@@ -123,12 +127,11 @@ sub _install {
 
 				# Create the context
 				my \$context = Aspect::AdviceContext->new(
-					type         => 'after_throwing',
-					pointcut     => \$pointcut,
-					sub_name     => \$name,
-					wantarray    => \$wantarray,
-					params       => \\\@_,
-					original     => \$original,
+					type     => 'after_throwing',
+					pointcut => \$pointcut,
+					sub_name => \$name,
+					params   => \\\@_,
+					original => \$original,
 					\%\$runtime,
 				);
 
@@ -151,6 +154,7 @@ sub _install {
 				return unless \$\@;
 
 				my \$runtime = {
+					wantarray    => \$wantarray,
 					return_value => undef,
 					exception    => \$\@,
 				};
@@ -158,12 +162,11 @@ sub _install {
 
 				# Create the context
 				my \$context = Aspect::AdviceContext->new(
-					type         => 'after_throwing',
-					pointcut     => \$pointcut,
-					sub_name     => \$name,
-					wantarray    => \$wantarray,
-					params       => \\\@_,
-					original     => \$original,
+					type     => 'after_throwing',
+					pointcut => \$pointcut,
+					sub_name => \$name,
+					params   => \\\@_,
+					original => \$original,
 					\%\$runtime,
 				);
 

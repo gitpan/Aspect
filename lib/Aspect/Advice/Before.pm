@@ -8,9 +8,10 @@ use warnings;
 use Carp::Heavy           (); 
 use Carp                  ();
 use Aspect::Advice        ();
+use Aspect::Advice::Hook  ();
 use Aspect::AdviceContext ();
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -64,21 +65,24 @@ sub _install {
 		# Generate the new function
 		no warnings 'redefine';
 		eval <<"END_PERL"; die $@ if $@;
+		package Aspect::Advice::Hook;
+
 		*$NAME = sub $PROTOTYPE {
 			# Is this a lexically scoped hook that has finished
 			goto &\$original if $MATCH_DISABLED;
 
 			# Apply any runtime-specific context checks
-			my \$runtime = {};
+			my \$wantarray = wantarray;
+			my \$runtime   = {
+				wantarray => \$wantarray,
+			};
 			goto &\$original unless $MATCH_RUN;
 
 			# Prepare the context object
-			my \$wantarray = wantarray;
-			my \$context   = Aspect::AdviceContext->new(
+			my \$context = Aspect::AdviceContext->new(
 				type         => 'before',
 				pointcut     => \$pointcut,
 				sub_name     => \$name,
-				wantarray    => \$wantarray,
 				params       => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
 				original     => \$original,
