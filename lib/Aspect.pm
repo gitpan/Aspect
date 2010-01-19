@@ -20,6 +20,7 @@ use Aspect::Pointcut::And          ();
 use Aspect::Pointcut::Not          ();
 use Aspect::Pointcut::Call         ();
 use Aspect::Pointcut::Cflow        ();
+use Aspect::Pointcut::Highest      ();
 use Aspect::Advice                 ();
 use Aspect::AdviceContext          ();
 use Aspect::Advice::Around         ();
@@ -29,7 +30,7 @@ use Aspect::Advice::AfterReturning ();
 use Aspect::Advice::AfterThrowing  ();
 use Aspect::AdviceContext          ();
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 # Internal data storage
 my @FOREVER = ();
@@ -94,6 +95,10 @@ sub after_throwing (&$) {
 	);
 }
 
+sub highest () {
+	Aspect::Pointcut::Highest->new();
+}
+
 sub if_true (&) {
 	Aspect::Pointcut::If->new(@_);
 }
@@ -145,7 +150,7 @@ sub import {
 		# Install new generation API functions
 		foreach ( qw{
 			around after_returning after_throwing
-			if_true
+			if_true highest
 		} ) {
 			Sub::Install::install_sub( {
 				code => $_,

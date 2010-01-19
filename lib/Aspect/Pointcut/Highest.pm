@@ -1,7 +1,9 @@
-package Aspect::Pointcut::Not;
+package Aspect::Pointcut::Highest;
 
 use strict;
 use warnings;
+use Carp             ();
+use Params::Util     ();
 use Aspect::Pointcut ();
 
 our $VERSION = '0.38';
@@ -12,39 +14,28 @@ our @ISA     = 'Aspect::Pointcut';
 
 
 ######################################################################
+# Constructor Methods
+
+sub new {
+	bless [ ], $_[0];
+}
+
+
+
+
+
+######################################################################
 # Weaving Methods
 
 sub match_define {
-	return ! shift->[0]->match_define(@_);
+	return 1;
 }
 
-sub match_contains {
-	my $self = shift;
-	return 1 if $self->isa($_[0]);
-	return 1 if $self->[0]->match_contains($_[0]);
-	return '';
-}
-
-# Logical not inherits it's curryability from the element contained
-# within it. We continue to be needed if and only if something below us
-# continues to be needed as well.
-# For cleanliness (and to avoid accidents) we make a copy of ourself
-# in case our child curries to something other than it's pure self.
+# Call pointcuts curry away to null, because they are the basis
+# for which methods to hook in the first place. Any method called
+# at run-time has already been checked.
 sub curry_run {
-	my $self  = shift;
-	my $child = $self->[0]->curry_run;
-	return unless $child;
-
-	# Handle the special case where the collapsing pointcut results
-	# in a "double not". Fetch the child of our child not and return
-	# it directly.
-	if ( $child->isa('Aspect::Pointcut::Not') ) {
-		return $child->[0];
-	}
-
-	# Return our clone with the curried child
-	my $class = ref($self);
-	return $class->new( $child );
+	bless [ 0 ], $_[0];
 }
 
 
@@ -55,7 +46,17 @@ sub curry_run {
 # Runtime Methods
 
 sub match_run {
-	return ! shift->[0]->match_run(@_);
+	my $self    = shift;
+	my $cleanup = sub { $self->[0]-- };
+	bless $cleanup, 'Aspect::Pointcut::Highest::Cleanup';
+	$_[1]->{highest} = $cleanup;
+	return ! $self->[0]++;
+}
+
+package Aspect::Pointcut::Highest::Cleanup;
+
+sub DESTROY {
+	$_[0]->();
 }
 
 1;
@@ -66,11 +67,11 @@ __END__
 
 =head1 NAME
 
-Aspect::Pointcut::Not - Logical 'not' operation pointcut
+Aspect::Pointcut::Call - Call pointcut
 
 =head1 SYNOPSIS
 
-    Aspect::Pointcut::Not->new;
+    Aspect::Pointcut::Call->new;
 
 =head1 DESCRIPTION
 
