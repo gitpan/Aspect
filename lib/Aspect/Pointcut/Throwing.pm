@@ -1,9 +1,9 @@
-package Aspect::Pointcut::Call;
+package Aspect::Pointcut::Throwing;
 
 use strict;
 use warnings;
 use Carp             ();
-use Params::Util     ();
+use Params::Util     ('_STRING', '_INSTANCE');
 use Aspect::Pointcut ();
 
 our $VERSION = '0.40';
@@ -14,37 +14,17 @@ our @ISA     = 'Aspect::Pointcut';
 
 
 ######################################################################
-# Constructor Methods
-
-sub new {
-	bless [ $_[0]->spec($_[1]) ], $_[0];
-}
-
-# Generate a match specification
-sub spec {
-	my $it = $_[1];
-	Params::Util::_STRING($it)   and return sub { $_[0] eq $it };
-	Params::Util::_REGEX($it)    and return sub { $_[0] =~ $it };
-	Params::Util::_CODELIKE($it) and return $it;
-	Carp::croak("Invalid function call specification");
-}
-
-
-
-
-
-######################################################################
 # Weaving Methods
 
 sub match_define {
-	$_[0]->[0]->($_[1]);
+	return 1;
 }
 
 # Call pointcuts curry away to null, because they are the basis
 # for which methods to hook in the first place. Any method called
 # at run-time has already been checked.
 sub curry_run {
-	return;
+	return $_[0];
 }
 
 
@@ -54,13 +34,28 @@ sub curry_run {
 ######################################################################
 # Runtime Methods
 
-# Because we now curry away this pointcut, theoretically we should just
-# return true. But if it is ever run inside a negation it returns false
-# results. So since this should never be run due to currying leave the
-# method resolving to the parent class die'ing stub.
-# Having this method die will allow us to more easily catch places where
-# this method is being called incorrectly.
-# sub match_run { 1 }
+sub match_run {
+	my ($self, undef, $runtime) = @_;
+	unless ( exists $runtime->{exception} ) {
+		# We are not in an exception
+		return 0;
+	}
+	my $spec      = $self->[0];
+	my $exception = $runtime->{exception};
+	if ( ref $spec eq 'Regexp' ) {
+		if ( defined _STRING($exception) ) {
+			return $exception =~ $spec ? 1 : 0;
+		} else {
+			return 0;
+		}
+	} else {
+		if ( defined _INSTANCE($exception, $spec) ) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
 
 1;
 
@@ -70,15 +65,18 @@ __END__
 
 =head1 NAME
 
-Aspect::Pointcut::Call - Call pointcut
+Aspect::Pointcut::Throwing - Exception typing pointcut
 
-=head1 SYNOPSIS
-
-    Aspect::Pointcut::Call->new;
+  use Aspect;
+  
+  # Catch Foo exceptions and return true instead
+  after { $_[0]->return_value(1) } throwing 'Foo::Exception';
 
 =head1 DESCRIPTION
 
-None yet.
+The B<Aspect::Pointcut::Throwing> pointcut is used to match situations
+in which an after() or after_throwing() advice returns a specific
+exception string or object.
 
 =head1 BUGS AND LIMITATIONS
 
