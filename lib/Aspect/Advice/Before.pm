@@ -11,7 +11,7 @@ use Aspect::Advice        ();
 use Aspect::Advice::Hook  ();
 use Aspect::AdviceContext ();
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -32,7 +32,7 @@ sub _install {
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
 	my $curried   = $pointcut->curry_run;
-	my $MATCH_RUN = $curried ? '$curried->match_run($name, $runtime)' : 1;
+	my $MATCH_RUN = $curried ? '$curried->match_run($runtime)' : 1;
 
 	# When an aspect falls out of scope, we don't attempt to remove
 	# the generated hook code, because it might (for reasons potentially
@@ -74,6 +74,7 @@ sub _install {
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
 			my \$runtime   = {
+				sub_name  => \$name,
 				wantarray => \$wantarray,
 			};
 			goto &\$original unless $MATCH_RUN;
@@ -82,7 +83,6 @@ sub _install {
 			my \$context = Aspect::AdviceContext->new(
 				type         => 'before',
 				pointcut     => \$pointcut,
-				sub_name     => \$name,
 				params       => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
 				original     => \$original,
@@ -101,12 +101,7 @@ sub _install {
 				}
 
 				# Don't run the original
-				my \$rv = \$context->return_value;
-				if ( ref \$rv eq 'ARRAY' ) {
-					return \@\$rv;
-				} else {
-					return ( \$rv );
-				}
+				return \@{\$context->{return_value}};
 			}
 
 			# Scalar and void have the same return handling.
@@ -119,7 +114,7 @@ sub _install {
 
 			# Do they want to shortcut?
 			unless ( \$context->proceed ) {
-				return \$context->return_value;
+				return \$context->{return_value};
 			}
 
 			# Continue onwards to the original function

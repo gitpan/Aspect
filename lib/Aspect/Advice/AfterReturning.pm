@@ -12,7 +12,7 @@ use Aspect::Advice        ();
 use Aspect::Advice::Hook  ();
 use Aspect::AdviceContext ();
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -29,7 +29,7 @@ sub _install {
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
 	my $curried   = $pointcut->curry_run;
-	my $MATCH_RUN = $curried ? '$curried->match_run($name, $runtime)' : 1;
+	my $MATCH_RUN = $curried ? '$curried->match_run($runtime)' : 1;
 
 	# When an aspect falls out of scope, we don't attempt to remove
 	# the generated hook code, because it might (for reasons potentially
@@ -70,6 +70,7 @@ sub _install {
 
 			my \$wantarray = wantarray;
 			my \$runtime   = {
+				sub_name  => \$name,
 				wantarray => \$wantarray,
 			};
 			if ( \$wantarray ) {
@@ -84,7 +85,6 @@ sub _install {
 				my \$context = Aspect::AdviceContext->new(
 					type         => 'after_returning',
 					pointcut     => \$pointcut,
-					sub_name     => \$name,
 					params       => \\\@_,
 					return_value => \$return,
 					original     => \$original,
@@ -95,12 +95,7 @@ sub _install {
 				() = &\$code(\$context);
 
 				# Get the (potentially) modified return value
-				\$return = \$context->return_value;
-				if ( ref \$return eq 'ARRAY' ) {
-					return \@\$return;
-				} else {
-					return ( \$return );
-				}
+				return \@{\$context->{return_value}};
 			}
 
 			if ( defined \$wantarray ) {
@@ -113,7 +108,6 @@ sub _install {
 				my \$context = Aspect::AdviceContext->new(
 					type         => 'after_returning',
 					pointcut     => \$pointcut,
-					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
 					return_value => \$return,
@@ -123,7 +117,7 @@ sub _install {
 
 				# Execute the advice code
 				my \$dummy = &\$code(\$context);
-				return \$context->return_value;
+				return \$context->{return_value};
 
 			} else {
 				Sub::Uplevel::uplevel(
@@ -135,7 +129,6 @@ sub _install {
 				my \$context = Aspect::AdviceContext->new(
 					type         => 'after_returning',
 					pointcut     => \$pointcut,
-					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
 					return_value => undef,
