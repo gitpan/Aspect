@@ -5,13 +5,13 @@ use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
-use Carp::Heavy           (); 
-use Carp                  ();
-use Aspect::Advice        ();
-use Aspect::Advice::Hook  ();
-use Aspect::AdviceContext ();
+use Carp::Heavy             (); 
+use Carp                    ();
+use Aspect::Hook            ();
+use Aspect::Advice          ();
+use Aspect::Context::Before ();
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -65,7 +65,7 @@ sub _install {
 		# Generate the new function
 		no warnings 'redefine';
 		eval <<"END_PERL"; die $@ if $@;
-		package Aspect::Advice::Hook;
+		package Aspect::Hook;
 
 		*$NAME = sub $PROTOTYPE {
 			# Is this a lexically scoped hook that has finished
@@ -80,7 +80,7 @@ sub _install {
 			goto &\$original unless $MATCH_RUN;
 
 			# Prepare the context object
-			my \$context = Aspect::AdviceContext->new(
+			my \$context = bless {
 				type         => 'before',
 				pointcut     => \$pointcut,
 				params       => \\\@_,
@@ -88,7 +88,7 @@ sub _install {
 				original     => \$original,
 				proceed      => 1,
 				\%\$runtime,
-			);
+			}, 'Aspect::Context::Before';
 
 			# Array context needs some special return handling
 			if ( \$wantarray ) {

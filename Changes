@@ -1,5 +1,19 @@
 Revision history for Perl extension Aspect
 
+0.42 Wed 20 Jan 2010 - Adam Kennedy
+	- Began the implementation of the new Aspect::Context tree
+	- Generated advice hook code now cheats for speed and blesses
+	  context objects directly into the advice-specific Aspect::Context
+	  class, which should be safe now the contexts have a dumb
+	  constructor.
+	- Pointcut matching now correctly ignores exported Aspect functions.
+	- Added in initial stub for Aspect::Library (the renaming of
+	  Aspect::Modular).
+	- Moved Aspect::Advice::Hook to Aspect::Hook to provide Advice/Hook
+	  class symmetry, and make it no longer an Advice subclass.
+	- Removed temporary debugging code in Aspect::Library::Breakpoint
+	  that slipped through into production
+
 0.41 Wed 20 Jan 2010 - Adam Kennedy
 	- So few pointcuts care about the sub name at run-time that
 	  it doesn't make sense to pass it as a separate parameter

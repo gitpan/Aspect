@@ -404,15 +404,10 @@ Documentation
     * add whatever constructs required for mocking packages, objects,
     builtins
 
-    * debugger support: break on pointcut
-
     * allow finer control of advice execution order
 
   Reusable Aspects
     * need better example for wormhole- something less tedius
-
-    * bring back Marcel's tracing aspect and example, class invariants
-    example
 
     * use Scalar-Footnote for adding aspect state to objects, e.g. in
     Listenable. Problem is it is still in developer release state

@@ -5,12 +5,12 @@ use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
-use Carp::Heavy           (); 
-use Carp                  ();
-use Sub::Uplevel          ();
-use Aspect::Advice        ();
-use Aspect::Advice::Hook  ();
-use Aspect::AdviceContext ();
+use Carp::Heavy                    (); 
+use Carp                           ();
+use Sub::Uplevel                   ();
+use Aspect::Hook                   ();
+use Aspect::Advice                 ();
+use Aspect::Context::AfterThrowing ();
 
 our $VERSION = '0.41';
 our @ISA     = 'Aspect::Advice';
@@ -62,7 +62,7 @@ sub _install {
 		# Generate the new function
 		no warnings 'redefine';
 		eval <<"END_PERL"; die $@ if $@;
-		package Aspect::Advice::Hook;
+		package Aspect::Hook;
 
 		*$NAME = sub $PROTOTYPE {
 			# Is this a lexically scoped hook that has finished
@@ -86,14 +86,14 @@ sub _install {
 				die \$runtime->{exception} unless $MATCH_RUN;
 
 				# Create the context
-				my \$context = Aspect::AdviceContext->new(
+				my \$context = bless {
 					type     => 'after_throwing',
 					pointcut => \$pointcut,
 					sub_name => \$name,
 					params   => \\\@_,
 					original => \$original,
 					\%\$runtime,
-				);
+				}, 'Aspect::Context::AfterThrowing';
 
 				# Execute the advice code
 				() = &\$code(\$context);
@@ -123,14 +123,14 @@ sub _install {
 				die \$runtime->{exception} unless $MATCH_RUN;
 
 				# Create the context
-				my \$context = Aspect::AdviceContext->new(
+				my \$context = bless {
 					type     => 'after_throwing',
 					pointcut => \$pointcut,
 					sub_name => \$name,
 					params   => \\\@_,
 					original => \$original,
 					\%\$runtime,
-				);
+				}, 'Aspect::Context::AfterThrowing';
 
 				# Execute the advice code
 				my \$dummy = &\$code(\$context);
@@ -159,13 +159,13 @@ sub _install {
 				die \$runtime->{exception} unless $MATCH_RUN;
 
 				# Create the context
-				my \$context = Aspect::AdviceContext->new(
+				my \$context = bless {
 					type     => 'after_throwing',
 					pointcut => \$pointcut,
 					params   => \\\@_,
 					original => \$original,
 					\%\$runtime,
-				);
+				}, 'Aspect::Context::AfterThrowing';
 
 				# Execute the advice code
 				&\$code(\$context);

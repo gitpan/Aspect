@@ -22,8 +22,15 @@ lib/Aspect/Advice/AfterReturning.pm
 lib/Aspect/Advice/AfterThrowing.pm
 lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
-lib/Aspect/Advice/Hook.pm
 lib/Aspect/AdviceContext.pm
+lib/Aspect/Context.pm
+lib/Aspect/Context/After.pm
+lib/Aspect/Context/AfterReturning.pm
+lib/Aspect/Context/AfterThrowing.pm
+lib/Aspect/Context/Around.pm
+lib/Aspect/Context/Before.pm
+lib/Aspect/Hook.pm
+lib/Aspect/Library.pm
 lib/Aspect/Library/Breakpoint.pm
 lib/Aspect/Library/Listenable.pm
 lib/Aspect/Library/Listenable/Event.pm

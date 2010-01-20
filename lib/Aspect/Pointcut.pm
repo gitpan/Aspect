@@ -7,7 +7,7 @@ use Aspect::Pointcut::Or  ();
 use Aspect::Pointcut::And ();
 use Aspect::Pointcut::Not ();
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 use overload (
 	# Keep traditional Perl boolification and stringification
@@ -83,7 +83,8 @@ sub match_all {
 		next if $UNTOUCHABLE{$package};
 		next if $package =~ /^Aspect\b/;
 		foreach my $name ( Devel::Symdump->new($package)->functions ) {
-			# TODO: Need to filter Aspect exportable functions!
+			# Filter Aspect exportable functions
+			next if $Aspect::EXPORTED{$name};
 			push @matches, $name if $self->match_define($name);
 		}
 	}
