@@ -5,7 +5,7 @@ use warnings;
 use Carp             ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant VOID   => 1;
@@ -39,7 +39,7 @@ sub match_define {
 }
 
 # For wantarray pointcuts we keep the original
-sub curry_run {
+sub match_curry {
 	return $_[0];
 }
 

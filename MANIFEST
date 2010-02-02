@@ -43,6 +43,7 @@ lib/Aspect/Pointcut/Call.pm
 lib/Aspect/Pointcut/Cflow.pm
 lib/Aspect/Pointcut/Highest.pm
 lib/Aspect/Pointcut/If.pm
+lib/Aspect/Pointcut/Logic.pm
 lib/Aspect/Pointcut/Not.pm
 lib/Aspect/Pointcut/Or.pm
 lib/Aspect/Pointcut/Throwing.pm

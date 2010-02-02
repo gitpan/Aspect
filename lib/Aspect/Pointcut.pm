@@ -7,7 +7,7 @@ use Aspect::Pointcut::Or  ();
 use Aspect::Pointcut::And ();
 use Aspect::Pointcut::Not ();
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 use overload (
 	# Keep traditional Perl boolification and stringification
@@ -70,6 +70,10 @@ BEGIN {
 	);
 }
 
+sub match_runtime {
+	return 1;
+}
+
 # Find the list of all matching subs
 sub match_all {
 	my $self    = shift;
@@ -103,7 +107,7 @@ sub match_contains {
 	return '';
 }
 
-sub curry_run {
+sub match_curry {
 	my $class = ref $_[0] || $_[0];
 	die("Method 'curry' not implemented in class '$class'");
 }

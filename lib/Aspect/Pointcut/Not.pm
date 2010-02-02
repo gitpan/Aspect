@@ -2,10 +2,14 @@ package Aspect::Pointcut::Not;
 
 use strict;
 use warnings;
-use Aspect::Pointcut ();
+use Aspect::Pointcut        ();
+use Aspect::Pointcut::Logic ();
 
-our $VERSION = '0.42';
-our @ISA     = 'Aspect::Pointcut';
+our $VERSION = '0.43';
+our @ISA     = qw{
+	Aspect::Pointcut::Logic
+	Aspect::Pointcut
+};
 
 
 
@@ -25,14 +29,18 @@ sub match_contains {
 	return '';
 }
 
+sub match_runtime {
+	$_[0]->[0]->match_runtime;
+}
+
 # Logical not inherits it's curryability from the element contained
 # within it. We continue to be needed if and only if something below us
 # continues to be needed as well.
 # For cleanliness (and to avoid accidents) we make a copy of ourself
 # in case our child curries to something other than it's pure self.
-sub curry_run {
+sub match_curry {
 	my $self  = shift;
-	my $child = $self->[0]->curry_run;
+	my $child = $self->[0]->match_curry;
 	return unless $child;
 
 	# Handle the special case where the collapsing pointcut results
