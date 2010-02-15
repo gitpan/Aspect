@@ -10,7 +10,6 @@ use warnings;
 use Carp::Heavy                    ();
 use Carp                           ();
 use Params::Util              1.00 ();
-use Devel::Symdump            2.04 ();
 use Sub::Install              0.92 ();
 use Sub::Uplevel            0.2002 ();
 use Aspect::Pointcut               ();
@@ -32,7 +31,7 @@ use Aspect::Advice::AfterReturning ();
 use Aspect::Advice::AfterThrowing  ();
 use Aspect::AdviceContext          ();
 
-our $VERSION = '0.43';
+our $VERSION = '0.44';
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
