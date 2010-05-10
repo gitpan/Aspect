@@ -2,165 +2,10 @@ package Aspect::AdviceContext;
 
 use strict;
 use warnings;
-use Carp         ();
-use Sub::Uplevel ();
+use Aspect::Point ();
 
-our $VERSION = '0.44';
-
-
-
-
-
-######################################################################
-# Constructor and Built-In Accessors
-
-sub new {
-	my $class = shift;
-	bless { @_ }, $class;
-}
-
-sub sub_name {
-	$_[0]->{sub_name};
-}
-
-sub wantarray {
-	$_[0]->{wantarray};
-}
-
-sub proceed {
-	unless ( defined $_[0]->{proceed} ) {
-		Carp::croak("The use of 'proceed' is meaningless in this advice");
-	}
-	@_ > 1 ? $_[0]->{proceed} = $_[1] : $_[0]->{proceed};
-}
-
-sub params_ref {
-	$_[0]->{params};
-}
-
-sub self {
-	$_[0]->{params}->[0];
-}
-
-sub params {
-	$_[0]->{params} = [ @_[1..$#_] ] if @_ > 1;
-	return CORE::wantarray
-		? @{$_[0]->{params}}
-		: $_[0]->{params};
-}
-
-sub append_param {
-	my $self = shift;
-	push @{$self->{params}}, @_;
-	return 1;
-}
-
-sub append_params {
-	shift->append_param(@_);
-}
-
-
-
-
-
-######################################################################
-# Higher Level Methods
-
-sub package_name {
-	my $self = shift;
-	my $name = $self->{sub_name};
-	return '' unless $name =~ /::/;
-	$name =~ s/::[^:]+$//;
-	return $name;
-}
-
-sub short_sub_name {
-	my $self = shift;
-	my $name = $self->{sub_name};
-	return $name unless $name =~ /::/;
-	$name =~ /::([^:]+)$/;
-	return $1;
-}
-
-sub run_original {
-	my $self = shift;
-	if ( $self->{wantarray} ) {
-		my $rv = [ Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		) ];
-		return $self->return_value($rv);
-	} elsif ( defined $self->{wantarray} ) {
-		my $rv = Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		);
-		return $self->return_value($rv);
-	} else {
-		Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		);
-		return;
-	}
-}
-
-sub return_value {
-	my $self = shift;
-	if ( @_ ) {
-		if ( $self->{wantarray} ) {
-			# Normalise list-wise return behaviour
-			# at mutation time, rather than everywhere else.
-			# NOTE: Reuse the current array reference. This
-			# causes the original return values to be cleaned
-			# up immediately, and allows for a small
-			# optimisation in the surrounding advice hook code.
-			$self->{return_value} = \@_;
-		} else {
-			$self->{return_value} = shift;
-		}
-		if ( defined $self->{exception} ) {
-			$self->{exception} = '';
-		}
-		$self->{proceed} = 0;
-	}
-	my $return_value = $self->get_value('return_value');
-	return (CORE::wantarray && ref $return_value eq 'ARRAY')
-		? @$return_value
-		: $return_value;
-}
-
-sub exception {
-	my $self = shift;
-	if ( @_ ) {
-		$self->{exception} = shift;
-		$self->{proceed}   = 0;
-	}
-	return $self->get_value('exception');
-}
-
-sub get_value {
-	my ($self, $key) = @_;
-	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
-	my $value = $self->{$key};
-	return (CORE::wantarray && ref $value eq 'ARRAY')
-		? @$value
-		: $value;
-}
-
-sub AUTOLOAD {
-	my $self = shift;
-	my $key  = our $AUTOLOAD;
-	$key =~ s/^.*:://;
-	return $self->get_value($key);
-}
-
-# Improves performance by not having to send DESTROY calls
-# through AUTOLOAD, and not having to check for DESTROY in AUTOLOAD.
-sub DESTROY () { }
+our $VERSION = '0.45';
+our @ISA     = 'Aspect::Point';
 
 1;
 
@@ -170,12 +15,13 @@ __END__
 
 =head1 NAME
 
-Aspect::AdviceContext - a pointcut context for advice code
+Aspect::AdviceContext - The Join Point context (DEPRECATED)
 
 =head1 SYNOPSIS
 
-  $pointcut = call qr/^Person::[gs]et_/ & cflow company => qr/^Company::/;
-
+  $pointcut = call qr/^Person::[gs]et_/
+            & cflow company => qr/^Company::/;
+  
   # using in 'before' advice code
   before {
      my $context = shift;             # context is only param to advice code
@@ -195,6 +41,9 @@ Aspect::AdviceContext - a pointcut context for advice code
   } $pointcut;
 
 =head1 DESCRIPTION
+
+B<This module has been deprecated and is included for back-compatibility.>
+See L<Aspect::Point> for the replacement to this module.
 
 Advice code is called when the advice pointcut is matched. In this code,
 there is always a need to access information about the context of the
@@ -265,33 +114,6 @@ that eventually reached the get/set on C<Person>:
 
   before { print shift->company->name } $pointcut;
 
-=head1 SEE ALSO
-
-See the L<Aspect|::Aspect> pod for a guide to the Aspect module.
-
-You can find examples of using the C<AdviceContext> in any advice code.
-The aspect library for example (e.g. L<Aspect::Library::Wormhole>).
-
-L<Aspect::Advice> creates the main C<AdviceContext>, and
-C<Aspect::Pointcut::Cflow> creates contexts for each matched call flow.
-
-=head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.
-
-=head1 INSTALLATION
-
-See perlmodinstall for information and options on installing Perl modules.
-
-=head1 AVAILABILITY
-
-The latest version of this module is available from the Comprehensive Perl
-Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
-site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
-
 =head1 AUTHORS
 
 Adam Kennedy E<lt>adamk@cpan.orgE<gt>
@@ -300,12 +122,7 @@ Marcel GrE<uuml>nauer E<lt>marcel@cpan.orgE<gt>
 
 Ran Eilam E<lt>eilara@cpan.orgE<gt>
 
-=head1 SEE ALSO
-
-You can find AOP examples in the C<examples/> directory of the
-distribution.
-
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
 Copyright 2001 by Marcel GrE<uuml>nauer
 

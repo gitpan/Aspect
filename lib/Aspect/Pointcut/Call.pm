@@ -6,7 +6,7 @@ use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.44';
+our $VERSION = '0.45';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -92,28 +92,17 @@ Aspect::Pointcut::Call - Call pointcut
 
 =head1 SYNOPSIS
 
-    Aspect::Pointcut::Call->new;
+  use Aspect;
+  
+  # High-level creation
+  my $pointcut1 = call 'one';
+  
+  # Manual creation
+  my $pointcut2 = Aspect::Pointcut::Call->new('one');
 
 =head1 DESCRIPTION
 
 None yet.
-
-=head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.
-
-=head1 INSTALLATION
-
-See perlmodinstall for information and options on installing Perl modules.
-
-=head1 AVAILABILITY
-
-The latest version of this module is available from the Comprehensive Perl
-Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
-site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
 
 =head1 AUTHORS
 
@@ -123,12 +112,7 @@ Marcel GrE<uuml>nauer E<lt>marcel@cpan.orgE<gt>
 
 Ran Eilam E<lt>eilara@cpan.orgE<gt>
 
-=head1 SEE ALSO
-
-You can find AOP examples in the C<examples/> directory of the
-distribution.
-
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
 Copyright 2001 by Marcel GrE<uuml>nauer
 

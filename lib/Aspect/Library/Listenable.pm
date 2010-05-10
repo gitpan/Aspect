@@ -12,17 +12,20 @@ use Aspect::Modular                    ();
 use Aspect::Advice::Before             ();
 use Aspect::Library::Listenable::Event ();
 
-our $VERSION = '0.44';
-our @ISA     = qw{ Aspect::Modular };
+our $VERSION = '0.45';
+our @ISA     = 'Aspect::Modular';
 
 sub import {
 	my $into = caller();
-	foreach ( qw{ add_listener remove_listener } ) {
-		Sub::Install::install_sub( {
-			code => $_,
-			into => $into,
-		} );
-	}
+
+	Sub::Install::install_sub( {
+		code => $_,
+		into => $into,
+	} ) foreach qw{
+		add_listener
+		remove_listener
+	};
+
 	return 1;
 }
 
@@ -191,7 +194,7 @@ Aspect::Library::Listenable - Observer pattern with events
   # the class that we will make listenable
   package Point;
   
-  
+
   sub new   { bless {color => 'blue'}, shift }
   sub erase { print 'erased!' }
   
@@ -546,34 +549,9 @@ C<aspect Listenable...> in a void context.
 
 =head1 SEE ALSO
 
-See the L<Aspect|::Aspect> pods for a guide to the Aspect module.
-
-There are several papers on the web about implementing Observer with
-aspects. Here is an example:
-L<http://www.itu.dk/people/jborella/docs/observer.pdf>.
-
-You can see examples of API usage in the unit test for the aspect.
-
 C<Class::Listener>, C<Class::Observable>. Both are object-oriented
 solutions to the same problem. Both force you to change the listenable
 class, by adding the code to fire events inside your "hot" methods.
-
-=head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.
-
-=head1 INSTALLATION
-
-See perlmodinstall for information and options on installing Perl modules.
-
-=head1 AVAILABILITY
-
-The latest version of this module is available from the Comprehensive Perl
-Archive Network (CPAN). Visit <http://www.perl.com/CPAN/> to find a CPAN
-site near you. Or see <http://www.perl.com/CPAN/authors/id/M/MA/MARCEL/>.
 
 =head1 AUTHORS
 
@@ -583,12 +561,7 @@ Marcel GrE<uuml>nauer E<lt>marcel@cpan.orgE<gt>
 
 Ran Eilam E<lt>eilara@cpan.orgE<gt>
 
-=head1 SEE ALSO
-
-You can find AOP examples in the C<examples/> directory of the
-distribution.
-
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
 Copyright 2001 by Marcel GrE<uuml>nauer
 

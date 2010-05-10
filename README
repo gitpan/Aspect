@@ -73,7 +73,7 @@ DESCRIPTION
     It allows you to select collections of subroutines using a flexible
     pointcut language, and modify their behavior in any way you want.
 
-TERMINOLOGY
+  Terminology
     Join Point
         An event that occurs during the running of a program. Currently only
         calls to subroutines are recognized as join points.
@@ -104,7 +104,7 @@ TERMINOLOGY
         An object that installs advice. A way to package advice and other
         Perl code, so that it is reusable.
 
-FEATURES
+  Features
     *   Create and remove pointcuts, advice, and aspects.
 
     *   Flexible pointcut language: select subs to match using string
@@ -126,7 +126,7 @@ FEATURES
         aspect is an example of how to interface with AOP-like modules from
         CPAN.
 
-WHY
+  Why create this module?
     Perl is a highly dynamic language, where everything this module does can
     be done without too much difficulty. All this module does, is make it
     even easier, and bring these features under one consistent interface. I
@@ -156,28 +156,28 @@ WHY
     *   More options when writing the advice code. You can, for example, run
         the original sub, or append parameters to it.
 
-USING
+  Using Aspect.pm
     This package is a facade on top of the Perl AOP framework. It allows you
-    to create pointcuts, advice, and aspects. You will be mostly working
-    with this package ("Aspect"), and the advice context package.
+    to create pointcuts, advice, and aspects in a simple declarative
+    fastion.
 
-    When you use this package:
+    You will be mostly working with this package ("Aspect"), and the advice
+    context package.
 
-    use Aspect;
+    When you "use Aspect;" you will import a family of around a dozen
+    functions. These are all factories that allow you to create pointcuts,
+    advice, and aspects.
 
-    You will import five subs: "call()", "cflow()", "before()", "after()",
-    and "aspect()". These are all factories that allow you to create
-    pointcuts, advice, and aspects.
-
-  POINTCUTS
+  Pointcuts
     Pointcuts select join points, so that an advice can run code when they
-    happen. The simplest pointcut is "call()". For example:
+    happen. The most common pointcut you will probably use is "call()". For
+    example:
 
       $p = call 'Person::get_address';
 
-    Selects the calling of "Person::get_address()", as defined in the symbol
-    table during weave-time. The string is a pointcut spec, and can be
-    expressed in three ways:
+    This selects the calling of "Person::get_address()" as defined in the
+    symbol table during weave-time. The string is a pointcut spec, and can
+    be expressed in three ways:
 
     "string"
         Select only the sub whose name is equal to the spec string.
@@ -203,7 +203,7 @@ USING
 
     Select all calls to "Person", which are not calls to the constructor:
 
-      $p = call qr/^Person::\w+$/ & !call 'Person::create';
+      $p = call qr/^Person::\w+$/ & ! call 'Person::create';
 
     The second pointcut you can use, is "cflow()". It selects only the subs
     that are in call flow of its spec. Here we select all calls to "Person",
@@ -221,10 +221,20 @@ USING
 
     See the Aspect::Pointcut docs for more info.
 
-  ADVICE
-    An advice is just some definition of code that will run on a match of
-    some pointcut. An advice can run before the pointcut matched sub is run,
-    or after. You create advice using "before()", "after()", or "around()".
+  Advice
+    An advice definition is just some code that will run on a match of some
+    pointcut. The "advice" can run around the entire call to allow lexical
+    variables to capture custom information on the way into the function
+    that will be needed when it exists, or it can be more specific and only
+    run before the sub, after the sub runs and returns, after the sub throws
+    an exception, or after the sub runs regardless of the result.
+
+    Using a more specific advice type will allow the optimiser to generate
+    smaller and faster hooks into your code.
+
+    You create advice using "around", "before", "after_returning",
+    "after_throwing" or "after()".
+
     These take a "CODE" ref, and a pointcut, and install the code on the
     subs that match the pointcut. For example:
 
@@ -234,82 +244,91 @@ USING
 
     The advice code is run with one parameter: the advice context. You use
     it to learn how the matched sub was run, modify parameters, return
-    value, and if it is run at all. You also use the advice context to
-    access any context objects that were created by any matching "cflow()"
-    pointcuts. This will print the name of the "Company" that started the
-    call flow which eventually reached "Person::get_address()":
+    value, and if it is run at all.
 
-      before {
-          print shift->company->name;
-      } call 'Person::get_address'
-      & cflow company => qr/^Company::w+$/;
+    When the advice is created in void context, it remains enabled until the
+    interpreter dies, or the symbol table reloaded.
 
-    See the Aspect::AdviceContext docs for some more examples of advice
-    code.
+    However, advice code can also be applied to matching pointcuts (i.e. the
+    advice is enabled) for only a specific scope by declare it in scalar
+    context and storing the returned guard object.
 
-    Advice code is applied to matching pointcuts (i.e. the advice is
-    enabled) as long as the advice object is in scope. This allows you to
-    neatly control enabling and disabling of advice:
+    This allows you to neatly control enabling and disabling of advice:
 
       SCOPE: {
          my $advice = before { print "called!\n" } $pointcut;
-         # do something while the device is enabled
+         # Do something while the device is enabled
       }
-      # the advice is now disabled
+      
+  # The advice is now disabled
 
-    If the advice is created in void context, it remains enabled until the
-    interpreter dies, or the symbol table reloaded.
-
-  ASPECTS
+  Aspects
     Aspects are just plain old Perl objects, that install advice, and do
     other AOP-like things, like install methods on other classes, or mess
     around with the inheritance hierarchy of other classes. A good base
-    class for them is Aspect::Modular, but you can use any Perl object.
+    class for them is Aspect::Modular, but you can use any Perl object as
+    long as the class inherits from Aspect::Library.
 
-    If the aspect class exists in the package "Aspect::Library", then it can
-    be easily created:
+    If the aspect class exists immediately below the namespace
+    "Aspect::Library", then it can be easily created with the following
+    shortcut.
 
       aspect Singleton => 'Company::create';
 
-    Will create an Aspect::Library::Singleton object. This reusable aspect
-    is included in the "Aspect" distribution, and forces singleton behavior
-    on some constructor, in this case, "Company::create()".
+    This will create an Aspect::Library::Singleton object. This reusable
+    aspect is included in the "Aspect" distribution, and forces singleton
+    behavior on some constructor, in this case, "Company::create()".
 
-    Such aspects, like advice, are enabled as long as they are in scope.
+    Such aspects share a similar behaviour to advice. If enabled in void
+    context they will be installed permanently, but if called in scalar
+    context they will return a guard object that allows the aspect to be
+    enabled only until the end of the current scope.
 
-INTERNALS
+  Internals
     Due to the dynamic nature of Perl, there is no need for processing of
     source or byte code, as required in the Java and .NET worlds.
 
     The implementation is very simple: when you create advice, its pointcut
-    is matched using "match_define()". Every sub defined in the symbol table
-    is matched against the pointcut. Those that match, will get a special
-    wrapper installed. The wrapper only runs if during run-time, the
-    "match_run()" of the pointcut returns true.
+    is matched using "match_define()" to find every sub defined in the
+    symbol table that might match against the pointcut (potentially subject
+    to further runtime conditions).
+
+    Those that match, will get a special wrapper installed. The wrapper only
+    runs if during run-time, "match_run()" of the pointcut returns true.
 
     The wrapper code creates an advice context, and gives it to the advice
     code.
 
-    The "call()" pointcut is static, so "match_run()" always returns true,
-    and "match_define()" returns true if the sub name matches the pointcut
-    spec.
+    Some pointcuts like "call()" are static, so "match_run()" always returns
+    true, and "match_define()" returns true if the sub name matches the
+    pointcut spec.
 
-    The "cflow()" pointcut is dynamic, so "match_define()" always returns
-    true, but "match_run()" return true only if some frame in the call flow
-    matches the pointcut spec.
+    Some pointcuts like "cflow()" are dynamic, so "match_define()" always
+    returns true, but "match_run()" return true only if some condition
+    within the advice context is true.
 
     To make this process faster, when the advice is installed, the pointcut
     will not use itself directly for the "match_run()" but will generate a
-    "curried" (optimised) version of itself. This curried version uses the
-    fact that "match_run()" will only be called if it matches the "call()"
-    pointcut pattern, and so no "call()" pointcuts needed to be tested at
-    run-time. It also handles collapsing any boolean logic impacted by the
-    removal of the "call()" pointcuts.
+    "curried" (optimised) version of itself.
+
+    This curried version uses the fact that "match_run()" will only be
+    called if it matches the "call()" pointcut pattern, and so no "call()"
+    pointcuts needed to be tested at run-time. It also handles collapsing
+    any boolean logic impacted by the removal of the "call()" pointcuts.
 
     If you use only "call()" pointcuts (alone or in boolean combinations)
     the currying results in a null case (the pointcut is optimised away
     entirely) and so the call to "match_run()" will be removed altogether
-    from the generated advice hooks, reducing the overhead significantly.
+    from the generated advice hooks, reducing the match overhead
+    significantly.
+
+    If your pointcut does not have any static conditions (i.e. "call") then
+    the wrapper code will need to be installed into every function on the
+    symbol table. This is highly discouraged and liable to result in hooks
+    on unusual functions and unwanted side effects.
+
+FUNCTIONS
+    TO BE COMPLETED
 
 LIMITATIONS
   Inheritance Support
@@ -483,7 +502,7 @@ SEE ALSO
 
     Aspect::Library::Trace
 
-COPYRIGHT AND LICENSE
+COPYRIGHT
     Copyright 2001 by Marcel Grünauer
 
     Some parts copyright 2009 - 2010 Adam Kennedy.

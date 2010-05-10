@@ -5,7 +5,7 @@ use warnings;
 use Carp             ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.44';
+our $VERSION = '0.45';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant VOID   => 1;
@@ -20,11 +20,20 @@ use constant LIST   => 3;
 # Constructor Methods
 
 sub new {
-	my $class = shift;
-	my $want  = shift;
-	return bless [ LIST   ], $class if $want;
-	return bless [ SCALAR ], $class if defined $want;
-	return bless [ VOID   ], $class;
+	return bless [
+		LIST,
+		'$_->{wantarray}',
+	], $_[0] if $_[1];
+
+	return bless [
+		SCALAR,
+		'defined $_->{wantarray} and not $_->{wantarray}',
+	], $_[0] if defined $_[1];
+
+	return bless [
+		VOID,
+		'not defined $_->{wantarray}',
+	], $_[0];
 }
 
 
@@ -73,35 +82,37 @@ __END__
 
 =head1 NAME
 
-Aspect::Pointcut::Wantarray - A pointcut for the wantarray call context
+Aspect::Pointcut::Wantarray - A pointcut for the run-time wantarray context
 
 =head1 SYNOPSIS
 
   use Aspect;
   
-  # Catch events in all three contexts
-  my $pointcut = wantlist & wantscalar & wantvoid;
+  # High-level creation
+  my $pointcut1 = wantlist | wantscalar | wantvoid;
+  
+  # Manual creation
+  my $pointcut2 = Padre::Pointcut::Or->new(
+    Padre::Pointcut::Wantarray->new( 1 ),     # List
+    Padre::Pointcut::Wantarray->new( 0 ),     # Scalar
+    Padre::Pointcut::Wantarray->new( undef ), # Void
+  );
 
 =head1 DESCRIPTION
 
 The C<Aspect::Pointcut::Wantarray> pointcut allows the creation of
-aspects that only trap calls made in a particular context (list, scalar
-or void).
-
-=head1 BUGS AND LIMITATIONS
-
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.
+aspects that only trap calls made in a particular calling context
+(list, scalar or void).
 
 =head1 AUTHORS
 
 Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 COPYRIGHT
 
-Copyright 2010 Adam Kennedy.
+Copyright 2001 by Marcel GrE<uuml>nauer
+
+Some parts copyright 2009 - 2010 Adam Kennedy.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
