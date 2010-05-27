@@ -6,8 +6,14 @@ use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 our @ISA     = 'Aspect::Pointcut';
+
+use constant ORIGINAL     => 0;
+use constant COMPILE_CODE => 1;
+use constant RUNTIME_CODE => 2;
+use constant COMPILE_EVAL => 3;
+use constant RUNTIME_EVAL => 4;
 
 
 
@@ -16,24 +22,52 @@ our @ISA     = 'Aspect::Pointcut';
 ######################################################################
 # Constructor Methods
 
+# The constructor stores three values.
+# $self->[0] is the original specification provided to the constructor
+# $self->[1] is a function form of the condition that has a sub name passed
+#            in and returns true if matching or false if not.
+# $self->[2] is a either a string that is a fragment of Perl that can be eval'ed
+#            with $_ set to a join point object, or a function in the style of
+#            the $self->[1] param above and taking the sub name param. Returns
+#            true if matching or false if not.
 sub new {
 	my $class = shift;
 	my $spec  = shift;
 	if ( Params::Util::_STRING($spec) ) {
-		my $perl = '$_->{sub_name} eq "' . quotemeta($spec) . '"';
-		return bless [ $spec, sub { $_[0] eq $spec }, $perl ], $class;
+		my $string = '"' . quotemeta($spec) . '"';
+		return bless [
+			$spec,
+			eval "sub () { \$_[0] eq $string }",
+			eval "sub () { \$_ eq $string }",
+			eval "sub () { \$_->{sub_name} eq $string }",
+			"\$_ eq $string",
+			"\$_->{sub_name} eq $string",
+		], $class;
 	}
 	if ( Params::Util::_CODELIKE($spec) ) {
-		return bless [ $spec, $spec, $spec ], $class;
+		return bless [
+			$spec,
+			$spec,
+			sub { $spec->($_) },
+			sub { $spec->($_->{sub_name}) },
+			sub { $spec->($_) },
+			sub { $spec->($_->{sub_name}) },
+		], $class;
 	}
-	unless ( Params::Util::_REGEX($spec) ) {
-		Carp::croak("Invalid function call specification");
+	if ( Params::Util::_REGEX($spec) ) {
+		# Special case serialisation of regexs
+		my $regex = "$spec";
+		$regex =~ s|^\(\?([xism]*)-[xism]*:(.*)\)\z|/$2/$1|s;
+		return bless [
+			$spec,
+			eval "sub () { \$_[0] =~ $regex }",
+			eval "sub () { $regex }",
+			eval "sub () { \$_->{sub_name} =~ $regex }",
+			$regex,
+			"\$_->{sub_name} =~ $regex",
+		], $class;
 	}
-
-	# Special case serialisation of regexs
-	my $perl = "$spec";
-	$perl =~ s|^\(\?([xism]*)-[xism]*:(.*)\)\z|\$_->{sub_name} =~ m/$2/$1|s;
-	return bless [ $spec, sub { $_[0] =~ $spec }, $perl ], $class;
+	Carp::croak("Invalid function call specification");
 }
 
 
@@ -42,10 +76,6 @@ sub new {
 
 ######################################################################
 # Weaving Methods
-
-sub match_define {
-	$_[0]->[1]->($_[1]);
-}
 
 sub match_runtime {
 	return 0;
@@ -59,25 +89,13 @@ sub match_curry {
 }
 
 # Compiled string form of the pointcut
-sub match_compile {
-	$_[0]->[2];
+sub compile_weave {
+	$_[0]->[4];
 }
 
-
-
-
-
-######################################################################
-# Runtime Methods
-
-# Because we now curry away this pointcut, theoretically we should just
-# return true. But if it is ever run inside a negation it returns false
-# results. So since this should never be run due to currying leave the
-# method resolving to the parent class die'ing stub.
-# Having this method die will allow us to more easily catch places where
-# this method is being called incorrectly.
-sub match_run {
-	$_[0]->[1]->( $_[1]->{sub_name} );
+# Compiled string form of the pointcut
+sub compile_runtime {
+	$_[0]->[5];
 }
 
 1;

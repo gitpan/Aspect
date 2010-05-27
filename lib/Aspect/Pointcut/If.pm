@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Pointcut ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -13,11 +13,6 @@ our @ISA     = 'Aspect::Pointcut';
 
 ######################################################################
 # Weaving Methods
-
-# We match everything at curry-time
-sub match_define {
-	return 1;
-}
 
 # The condition pointcut contains no state and doesn't need to be curried.
 # Simply return it as-is and reuse it everywhere.
@@ -32,9 +27,8 @@ sub match_curry {
 ######################################################################
 # Runtime Methods
 
-# Match only when code returns boolean true
-sub match_run {
-	return !! $_[0]->[0]->();
+sub compile_runtime {
+	$_[0]->[0];
 }
 
 1;

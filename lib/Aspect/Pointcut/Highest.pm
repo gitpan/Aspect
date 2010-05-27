@@ -6,7 +6,7 @@ use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -27,10 +27,6 @@ sub new {
 ######################################################################
 # Weaving Methods
 
-sub match_define {
-	return 1;
-}
-
 # Call pointcuts curry away to null, because they are the basis
 # for which methods to hook in the first place. Any method called
 # at run-time has already been checked.
@@ -45,12 +41,14 @@ sub match_curry {
 ######################################################################
 # Runtime Methods
 
-sub match_run {
-	my $self    = shift;
-	my $cleanup = sub { $self->[0]-- };
-	bless $cleanup, 'Aspect::Pointcut::Highest::Cleanup';
-	$_[0]->{highest} = $cleanup;
-	return ! $self->[0]++;
+sub compile_runtime {
+	my $depth = 0;
+	return sub {
+		my $cleanup  = sub { $depth-- };
+		bless $cleanup, 'Aspect::Pointcut::Highest::Cleanup';
+		$_->{highest} = $cleanup;
+		return ! $depth++;
+	};
 }
 
 package Aspect::Pointcut::Highest::Cleanup;

@@ -8,7 +8,7 @@ use Aspect::Pointcut       ();
 use Aspect::Pointcut::Call ();
 use Aspect::AdviceContext  ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant KEY  => 0;
@@ -39,11 +39,6 @@ sub new {
 ######################################################################
 # Weaving Methods
 
-# To make cflow work we need to hook (sadly) everything
-sub match_define {
-	return 1;
-}
-
 # The cflow pointcuts do not curry at all.
 # So they don't need to clone, and can be used directly.
 sub match_curry {
@@ -57,30 +52,29 @@ sub match_curry {
 ######################################################################
 # Runtime Methods
 
-sub match_run {
-	my $self    = shift;
-	my $runtime = shift;
-	my $caller  = $self->find_caller or return 0;
-	my $context = Aspect::AdviceContext->new(
-		sub_name => $caller->{sub_name},
-		pointcut => $self,
-		params   => $caller->{params},
-	);
-	$runtime->{$self->[KEY]} = $context;
-	return 1;
-}
-
-sub find_caller {
-	my $self  = shift;
-	my $level = 2;
-	while ( my $context = $self->caller_info($level++) ) {
-		return $context if $self->[SPEC]->( $context->{sub_name} );
-	}
-	return undef;
+sub compile_runtime {
+	my $self = shift;
+	return sub {
+		my $level   = 2;
+		my $caller  = undef;
+		while ( my $cc = caller_info($level++) ) {
+			next unless $self->[SPEC]->( $cc->{sub_name} );
+			$caller = $cc;
+			last;
+		}
+		return 0 unless $caller;
+		my $class   = (ref $_ or 'Aspect::AdviceContext');
+		my $context = $class->new(
+			sub_name => $caller->{sub_name},
+			pointcut => $_->{pointcut},
+			params   => $caller->{params},
+		);
+		$_->{$self->[KEY]} = $context;
+		return 1;
+	};
 }
 
 sub caller_info {
-	my $self  = shift;
 	my $level = shift;
 
 	package DB;

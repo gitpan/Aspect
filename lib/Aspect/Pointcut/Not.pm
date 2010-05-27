@@ -5,7 +5,7 @@ use warnings;
 use Aspect::Pointcut        ();
 use Aspect::Pointcut::Logic ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 our @ISA     = qw{
 	Aspect::Pointcut::Logic
 	Aspect::Pointcut
@@ -18,8 +18,22 @@ our @ISA     = qw{
 ######################################################################
 # Weaving Methods
 
-sub match_define {
-	return ! shift->[0]->match_define(@_);
+sub compile_weave {
+	my $child = $_[0]->[0]->compile_weave;
+	if ( ref $child ) {
+		return sub { not $child->() };
+	} else {
+		return "not ( $child )";
+	}
+}
+
+sub compile_runtime {
+	my $child = $_[0]->[0]->compile_runtime;
+	if ( ref $child ) {
+		return sub { not $child->() };
+	} else {
+		return "not ( $child )";
+	}
 }
 
 sub match_contains {
@@ -53,17 +67,6 @@ sub match_curry {
 	# Return our clone with the curried child
 	my $class = ref($self);
 	return $class->new( $child );
-}
-
-
-
-
-
-######################################################################
-# Runtime Methods
-
-sub match_run {
-	return ! shift->[0]->match_run(@_);
 }
 
 1;

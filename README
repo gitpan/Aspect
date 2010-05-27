@@ -294,32 +294,34 @@ DESCRIPTION
     to further runtime conditions).
 
     Those that match, will get a special wrapper installed. The wrapper only
-    runs if during run-time, "match_run()" of the pointcut returns true.
+    executes if, during run-time, a compiled context test for the pointcut
+    returns true.
 
     The wrapper code creates an advice context, and gives it to the advice
     code.
 
-    Some pointcuts like "call()" are static, so "match_run()" always returns
-    true, and "match_define()" returns true if the sub name matches the
-    pointcut spec.
+    Some pointcuts like "call()" are static, so the compiled run-time
+    function always returns true, and "match_define()" returns true if the
+    sub name matches the pointcut spec.
 
     Some pointcuts like "cflow()" are dynamic, so "match_define()" always
-    returns true, but "match_run()" return true only if some condition
-    within the advice context is true.
+    returns true, but the compiled run-time function returns true only if
+    some condition within the point is true.
 
     To make this process faster, when the advice is installed, the pointcut
-    will not use itself directly for the "match_run()" but will generate a
-    "curried" (optimised) version of itself.
+    will not use itself directly for the compiled run-time function but will
+    additionally generate a "curried" (optimised) version of itself.
 
-    This curried version uses the fact that "match_run()" will only be
+    This curried version uses the fact that the run-time check will only be
     called if it matches the "call()" pointcut pattern, and so no "call()"
-    pointcuts needed to be tested at run-time. It also handles collapsing
-    any boolean logic impacted by the removal of the "call()" pointcuts.
+    pointcuts needed to be tested at run-time unless they are in deep and
+    complex nested coolean logic. It also handles collapsing any boolean
+    logic impacted by the safe removal of the "call()" pointcuts.
 
     If you use only "call()" pointcuts (alone or in boolean combinations)
-    the currying results in a null case (the pointcut is optimised away
-    entirely) and so the call to "match_run()" will be removed altogether
-    from the generated advice hooks, reducing the match overhead
+    the currying results in a null test (the pointcut is optimised away
+    entirely) and so the need to make a run-time point test will be removed
+    altogether from the generated advice hooks, reducing call overheads
     significantly.
 
     If your pointcut does not have any static conditions (i.e. "call") then

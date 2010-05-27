@@ -40,7 +40,7 @@ use Aspect::Pointcut::Or  ();
 use Aspect::Pointcut::And ();
 use Aspect::Pointcut::Not ();
 
-our $VERSION = '0.45';
+our $VERSION = '0.90';
 
 use overload (
 	# Keep traditional Perl boolification and stringification
@@ -156,6 +156,12 @@ sub match_all {
 	my $self    = shift;
 	my @matches = ();
 
+	# Generate the compiled form of the weave-time function feature
+	my $compiled = $self->compiled_weave;
+	unless ( $compiled ) {
+		die "Failed to generate filter ->compile_weave";
+	}
+
 	# Quick initial root package scan to remove the need
 	# for special-casing of main:: in the recursive scan.
 	no strict 'refs';
@@ -182,7 +188,7 @@ sub match_all {
 		while ( ($key,$value) = each %{*{"$package\::"}} ) {
 			next if $key =~ /[^\w:]/;
 			next unless defined $value;
-			my $name = "$package\::$key";
+			$_ = "$package\::$key";
 			local(*ENTRY) = $value;
 
 			# Is this a matched function?
@@ -191,22 +197,22 @@ sub match_all {
 				and
 				not $IGNORE{$package}
 				and
-				not $Aspect::EXPORTED{$name}
+				not $Aspect::EXPORTED{$_}
 				and
-				$self->match_define($name)
+				$compiled->()
 			) {
-				push @matches, $name;
+				push @matches, $_;
 			}
 
 			# Is this a package we should recurse into?
 			if (
 				not $PRUNE{$package}
 				and
-				$name =~ s/::\z//
+				s/::\z//
 				and
 				defined *ENTRY{HASH}
 			) {
-				push @search, $name;
+				push @search, $_;
 			}
 		}
 	}
@@ -245,6 +251,46 @@ sub match_define {
 
 =pod
 
+=head2 compile_weave
+
+The C<compile_weave> method generates a custom function that is used to test
+if a particular named function should be hooked as a potential join point.
+
+=cut
+
+# Most pointcut conditions always match, so default to that
+sub compile_weave {
+	return 1;
+}
+
+sub compiled_weave {
+	my $self = shift;
+	my $code = $self->compile_weave;
+	return $code if ref $code;
+	return eval "sub () { $code }";
+}
+
+=head2 compile_runtime
+
+The C<compile_runtime> method generates a custom function that is used to test
+if a particular named function should be hooked as a potential join point.
+
+=cut
+
+sub compile_runtime {
+	my $class = ref $_[0] || $_[0];
+	die "Missing compile_runtime method for $class";
+}
+
+sub compiled_runtime {
+	my $self = shift;
+	my $code = $self->compile_runtime;
+	return $code if ref $code;
+	return eval "sub () { $code }";
+}
+
+=pod
+
 =head2 match_contains
 
   my $contains_any = $pointcut->match_contains('Aspect::Pointcut::Call');
@@ -274,19 +320,21 @@ In a production system, pointcut declarations can result in large and
 complex B<Aspect::Pointcut> object trees.
 
 Because this tree can contain a large amount of structure that is no longer
-relevant at run-time, making a long series of prohibitively expensive
-cascading C<match_run> calls before every single function call.
+relevant at run-time, it can end up making a long series of prohibitively
+expensive cascading method or function calls before every single regular
+function call.
 
 To reduce this cost down to something more reasonable, pointcuts are run
-through a currying process ( see L<http://en.wikipedia.org/wiki/Currying> ).
+through a currying process (see L<http://en.wikipedia.org/wiki/Currying>).
 
 A variety of optimisations are used to simplify boolean nesting, to remove
 tests that are irrelevant once the compile-time hooks have all been set up,
-and that the currying process can determine will never need to be tested.
+and to remove other tests that the currying process can determine will
+never need to be tested.
 
 The currying process will generate and return a new pointcut tree that is
 independant from the original, and that can perform a match test at the
-minimum possible computational cost.
+structurally minimum computational cost.
 
 Returns a new optimised B<Aspect::Pointcut> object if any further testing
 needs to be done at run-time for the pointcut. Returns null (C<undef> in
@@ -302,36 +350,6 @@ sub match_curry {
 
 sub match_runtime {
 	return 1;
-}
-
-
-
-
-
-######################################################################
-# Runtime Methods
-
-=pod
-
-=head2 match_run
-
-  my $match_boolean = $pointcut->match_run( $context );
-
-The C<match_run> is used to test hooked functions at run-time to determine
-if the current invocation of the function matches the pointcut conditions.
-
-It is passed an L<Aspect::Point> object representing the current function
-invocation.
-
-Returns true if the current invocation matches the pointcut and should have
-its advice run, or false if the current invocation is not part of the
-pointcut and the advice should not be run for this function call.
-
-=cut
-
-sub match_run {
-	my $class = ref $_[0] || $_[0];
-	die("Method 'match_run' not implemented in class '$class'");
 }
 
 1;
