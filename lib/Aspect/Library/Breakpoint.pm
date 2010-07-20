@@ -5,7 +5,7 @@ use warnings;
 use Aspect::Library        ();
 use Aspect::Advice::Before ();
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 our @ISA     = 'Aspect::Library';
 
 sub get_advice {
@@ -14,6 +14,7 @@ sub get_advice {
 		lexical  => $self->lexical,
 		pointcut => $_[0],
 		code     => sub {
+			no warnings;
 			$DB::single = 1;
 		},
 	);
@@ -39,10 +40,6 @@ Aspect::Library::Breakpoint - A breakpoint aspect
   my $f2 = Foo->refresh_bar;
   
   # The debugger will go into single statement mode for both methods
-
-=head1 SUPER
-
-L<Aspect::Modular>
 
 =head1 DESCRIPTION
 

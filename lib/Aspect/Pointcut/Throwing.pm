@@ -6,7 +6,7 @@ use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -67,11 +67,9 @@ Aspect::Pointcut::Throwing - Exception typing pointcut
   
   # Catch a Foo::Exception object exception
   after {
-      $_[0]->return_value(1)
+      $_->return_value(1)
   } throwing 'Foo::Exception';
   
-  # Catch a plain die with particular string
-
 =head1 DESCRIPTION
 
 The B<Aspect::Pointcut::Throwing> pointcut is used to match situations

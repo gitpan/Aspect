@@ -5,7 +5,7 @@ use warnings;
 use Aspect::Pointcut        ();
 use Aspect::Pointcut::Logic ();
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 our @ISA     = qw{
 	Aspect::Pointcut::Logic
 	Aspect::Pointcut
@@ -54,8 +54,7 @@ sub match_runtime {
 # in case our child curries to something other than it's pure self.
 sub match_curry {
 	my $self  = shift;
-	my $child = $self->[0]->match_curry;
-	return unless $child;
+	my $child = $self->[0]->match_curry or return;
 
 	# Handle the special case where the collapsing pointcut results
 	# in a "double not". Fetch the child of our child not and return
