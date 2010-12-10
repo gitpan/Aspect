@@ -8,7 +8,7 @@ BEGIN {
 	$^W = 1;
 }
 
-use Test::More tests => 26;
+use Test::More tests => 28;
 use Test::NoWarnings;
 use Aspect;
 
@@ -117,4 +117,22 @@ SCOPE: {
 	is( $bar, 3, '->bar was called once' );
 	is( $baz, 1, '->baz was called once' );
 	is( $around, 18, 'Advice code was called three times' );
+}
+
+# Regression test for RT #63781 Could not get the return value
+SCOPE: {
+	around {
+		$_->run_original;
+		is( $_->return_value, 'James Bond', '->return_value ok' );
+	} call qr/query_person/;
+
+	is(
+		query_person('007'),
+		'James Bond',
+		'Function returns ok',
+	);
+
+	sub query_person {
+		return 'James Bond';
+	}
 }
