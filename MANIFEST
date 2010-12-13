@@ -73,6 +73,7 @@ t/32_feature_wantarray.t
 t/assumptions/closure.t
 t/assumptions/context.t
 t/listenable.t
+t/rt_57417.t
 t/singleton.t
 t/wormhole.t
 xt/meta.t
