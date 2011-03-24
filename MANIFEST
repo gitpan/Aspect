@@ -54,7 +54,6 @@ MANIFEST			This list of files
 META.yml
 README
 t/01_compile.t
-t/02_advice_context.t
 t/10_pointcut.t
 t/11_pointcut_call.t
 t/12_pointcut_cflow.t

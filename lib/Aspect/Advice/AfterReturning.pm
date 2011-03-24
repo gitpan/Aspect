@@ -12,7 +12,7 @@ use Aspect::Hook                  ();
 use Aspect::Advice                ();
 use Aspect::Point::AfterReturning ();
 
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -77,12 +77,11 @@ sub _install {
 					)
 				];
 				local \$_ = bless {
-					type         => 'after_returning',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
 					return_value => \$return,
-					exception    => undef,
+					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';
@@ -100,12 +99,11 @@ sub _install {
 					1, \$original, \@_,
 				);
 				local \$_ = bless {
-					type         => 'after_returning',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
 					return_value => \$return,
-					exception    => undef,
+					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';
@@ -120,12 +118,11 @@ sub _install {
 					1, \$original, \@_,
 				);
 				local \$_ = bless {
-					type         => 'after_returning',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
 					return_value => undef,
-					exception    => undef,
+					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';

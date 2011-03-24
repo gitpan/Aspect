@@ -12,7 +12,7 @@ use Aspect::Hook                 ();
 use Aspect::Advice               ();
 use Aspect::Point::AfterThrowing ();
 
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -79,7 +79,6 @@ sub _install {
 				return \@\$return unless \$\@;
 
 				local \$_ = bless {
-					type         => 'after_throwing',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
@@ -110,7 +109,6 @@ sub _install {
 				return \$return unless \$\@;
 
 				local \$_ = bless {
-					type         => 'after_throwing',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,
@@ -140,7 +138,6 @@ sub _install {
 				return unless \$\@;
 
 				local \$_ = bless {
-					type         => 'after_throwing',
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					params       => \\\@_,

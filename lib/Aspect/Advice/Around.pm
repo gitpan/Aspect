@@ -12,7 +12,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Around ();
 
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -69,12 +69,11 @@ sub _install {
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
 			local \$_ = bless {
-				type         => 'around',
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				params       => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
-				exception    => undef,
+				exception    => '',
 				pointcut     => \$pointcut,
 				original     => \$original,
 			}, 'Aspect::Point::Around';

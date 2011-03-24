@@ -11,7 +11,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Before ();
 
-our $VERSION = '0.95';
+our $VERSION = '0.96';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -75,7 +75,6 @@ sub _install {
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
 			local \$_ = bless {
-				type         => 'before',
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				params       => \\\@_,
