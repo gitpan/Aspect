@@ -6,7 +6,7 @@ use Aspect::Modular        ();
 use Aspect::Advice::Before ();
 use Aspect::Pointcut::Call ();
 
-our $VERSION = '0.96';
+our $VERSION = '0.97_01';
 our @ISA     = 'Aspect::Modular';
 
 my %CACHE = ();
@@ -22,7 +22,7 @@ sub get_advice {
 			if ( exists $CACHE{$class} ) {
 				$_->return_value($CACHE{$class});
 			} else {
-				$_->run_original;
+				$_->proceed;
 				unless ( $_->exception ) {
 					$CACHE{$class} = $_->return_value;
 				}

@@ -5,7 +5,7 @@ use warnings;
 use Carp         ();
 use Sub::Uplevel ();
 
-our $VERSION = '0.96';
+our $VERSION = '0.97_01';
 
 
 
@@ -14,10 +14,10 @@ our $VERSION = '0.96';
 ######################################################################
 # Constructor and Built-In Accessors
 
-sub new {
-	my $class = shift;
-	bless { @_ }, $class;
-}
+# sub new {
+	# my $class = shift;
+	# bless { @_ }, $class;
+# }
 
 sub sub_name {
 	$_[0]->{sub_name};
@@ -25,13 +25,6 @@ sub sub_name {
 
 sub wantarray {
 	$_[0]->{wantarray};
-}
-
-sub proceed {
-	unless ( defined $_[0]->{proceed} ) {
-		Carp::croak("The use of 'proceed' is meaningless in this advice");
-	}
-	@_ > 1 ? $_[0]->{proceed} = $_[1] : $_[0]->{proceed};
 }
 
 sub params_ref {
@@ -67,45 +60,17 @@ sub append_params {
 # Higher Level Methods
 
 sub package_name {
-	my $self = shift;
-	my $name = $self->{sub_name};
+	my $name = $_[0]->{sub_name};
 	return '' unless $name =~ /::/;
 	$name =~ s/::[^:]+$//;
 	return $name;
 }
 
 sub short_sub_name {
-	my $self = shift;
-	my $name = $self->{sub_name};
+	my $name = $_[0]->{sub_name};
 	return $name unless $name =~ /::/;
 	$name =~ /::([^:]+)$/;
 	return $1;
-}
-
-sub run_original {
-	my $self = shift;
-	if ( $self->{wantarray} ) {
-		my $rv = [ Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		) ];
-		return $self->return_value(@$rv);
-	} elsif ( defined $self->{wantarray} ) {
-		my $rv = Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		);
-		return $self->return_value($rv);
-	} else {
-		Sub::Uplevel::uplevel(
-			2,
-			$self->original,
-			$self->params,
-		);
-		return;
-	}
 }
 
 sub return_value {
@@ -138,10 +103,7 @@ sub AUTOLOAD {
 	my $key  = our $AUTOLOAD;
 	$key =~ s/^.*:://;
 	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
-	my $value = $self->{$key};
-	return $value unless CORE::wantarray;
-	return $value unless ref $value eq 'ARRAY';
-	return @$value;
+	return $self->{$key};
 }
 
 # Improves performance by not having to send DESTROY calls

@@ -4,22 +4,17 @@ use strict;
 use warnings;
 use Aspect::Point ();
 
-our $VERSION = '0.96';
+our $VERSION = '0.97_01';
 our @ISA     = 'Aspect::Point';
 
-sub type { 'before' }
-
-sub exception {
-	my $self = shift;
-	if ( @_ ) {
-		$self->{exception} = shift;
-		$self->{proceed}   = 0;
-	}
-	$self->{exception};
-}
+use constant type => 'before';
 
 sub original {
 	$_[0]->{original};
+}
+
+sub proceed {
+	@_ > 1 ? $_[0]->{proceed} = $_[1] : $_[0]->{proceed};
 }
 
 1;
