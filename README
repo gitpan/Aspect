@@ -2,54 +2,35 @@ NAME
     Aspect - Aspect-Oriented Programming (AOP) for Perl
 
 SYNOPSIS
-      package Person;
+      use Aspect;
       
-  sub create {
-          # ...
-      }
-      
-  sub set_name {
-          # ...
-      }
-      
-  sub get_address {
-          # ...
-      }
-      
-  package main;
-      
-  use Aspect;
-      
-  ### USING REUSABLE ASPECTS
-      
-  # There can only be one.
-      aspect Singleton => 'Person::create';
-      
-  # Profile all setters to find any slow ones
-      aspect Profiler => call qr/^Person::set_/;  
-      
-  ### WRITING YOUR OWN ADVICE
-      
-  # Defines a collection of events
-      my $pointcut = call qr/^Person::[gs]et_/; 
-      
-  # Advice will live as long as $before is in scope
-      my $before = before {
-          print "g/set will soon be next";
-      } $pointcut;
-      
-  # Advice will live forever, because it is created in void context 
-      after {
-          print "g/set has just been called";
-      } $pointcut;
-      
-  # Advice runs conditionally based on multiple factors
+  
+  
+  # Run some code "Advice" before a particular function
       before {
-          print "get will be called next, and we are within Tester::run_tests";
-      } call qr/^Person::get_/
+          print "About to call create\n";
+      } call 'Person::create';
+      
+  
+  
+  # Run Advice after several methods and hijack their return values
+      after {
+          print "Called getter/setter " . $_->sub_name . "\n";
+          $_->return_value(undef);
+      } call qr/^Person::[gs]et_/;
+      
+  
+  
+  # Run Advice conditionally based on multiple factors
+      before {
+          print "Calling a get method in void context within Tester::run_tests";
+      } wantvoid
+      & ( call qr/^Person::get_/ & ! call 'Person::get_not_trapped' )
       & cflow tester => 'Tester::run_tests';
       
-  # Complex condition hijack of a method if some condition is true
+  
+  
+  # Context-aware runtime hijacking of a method if certain condition is true
       around {
           if ( $_->self->customer_name eq 'Adam Kennedy' ) {
               # Ensure I always have cash
@@ -60,70 +41,133 @@ SYNOPSIS
               $_->return_value( $_->return_value - 1 );
           }
       } call 'Bank::Account::balance';
+      
+  
+  
+  # Catch and handle unexpected exceptions in a function into a formal object
+      after_throwing {
+          $_->exception(
+              Exception::Unexpected->new($_->exception)
+          );
+      } ! throwing qr/^Exception::(?:Expected|Unexpected)$/;
+      
+  
+  
+  # Run Advice only on the outmost of a recursive series of calls
+      around {
+        print "Starting recursive child search\n";
+        $_->proceed;
+        print "Finished recursive child search\n";
+      } call 'Person::find_child' & highest;
+      
+  
+  
+  # Run Advice only during the current lexical scope
+      SCOPE: {
+          my $hook = before {
+              print "About to call create\n";
+          } call 'Person::create';
+      
+      # Advice will run for this call
+          Person->create('Bob');
+      }
+      
+  # Advice won't run for this call
+      Person->create('Tom');
+      
+  
+  
+  # Use a pre-packaged collection "Aspect" of Advice rules to change a class
+      aspect Singleton => 'Foo::new';
+      
+  
+  
+  # Define debugger breakpoints with high precision and conditionality
+      aspect Breakpoint => call qr/^Foo::.+::Bar::when_/ & wantscalar & highest;
 
 DESCRIPTION
     Aspect-Oriented Programming (AOP) is a programming method developed by
-    Xerox PARC and others. The basic idea is that in complex class systems
-    there are certain aspects or behaviors that cannot normally be expressed
-    in a coherent, concise and precise way. One example of such aspects are
-    design patterns, which combine various kinds of classes to produce a
-    common type of behavior. Another is logging. See <http://www.aosd.net>
-    for more info.
+    Xerox PARC and others. The basic idea is that in complex systems there
+    are certain aspects or behaviors that cannot normally be expressed in a
+    coherent, concise and precise way.
+
+    One example is logging, where bits of logging code is spread throughout
+    the rest of the codenase. Another example is design patterns, which
+    combine various kinds of classes to produce a common type of behavior.
+
+    See <http://www.aosd.net> for more info.
 
     The Perl "Aspect" module closely follows the terminology of the AspectJ
     project (<http://eclipse.org/aspectj>). However due to the dynamic
     nature of the Perl language, several "AspectJ" features are useless for
     us: exception softening, mixin support, out-of-class method
-    declarations, and others.
+    declarations, annotations, and others.
 
     The Perl "Aspect" module is focused on subroutine matching and wrapping.
     It allows you to select collections of subroutines using a flexible
     pointcut language, and modify their behavior in any way you want.
 
+    In this regard it provides a similar set of functionality to
+    Hook::LexWrap, but with much more precision and with much more control
+    and maintainability as the complexity of what you are doing increases.
+
   Terminology
+    One of the more opaque aspects (no pun intended) of Aspect-Oriented
+    programming is that it has an entire unique set of terms that can be
+    confusing for people learning to use the "Aspect" module.
+
     Join Point
-        An event that occurs during the running of a program. Currently only
-        calls to subroutines are recognized as join points.
+        An event that occurs during the running of a program which can be
+        trapped and handled within the aspect system. Currently only calls
+        to subroutines are supported as join points in Aspect.
 
     Pointcut
-        An expression that selects a collection of join points. For example:
-        all calls to the class "Person", that are in the call flow of some
-        "Company", but *not* in the call flow of "Company::make_report".
-        "Aspect" supports "call()", and "cflow()" pointcuts, and logical
+        An expression that selects a collection of join points and
+        conditions. For example: all calls to the class "Person", that are
+        called while within a call to some method of "Company", but *not*
+        the method "Company::make_report".
+
+        "Aspect" supports "call", and "cflow" and "throwing" pointcuts, the
+        Perl specific pointcuts "wantvoid", "wantscalar", "wantarray", the
+        run-time stateful pointcuts "highest" and "if_true", and the logical
         operators ("&", "|", "!") for constructing more complex pointcuts.
-        See the Aspect::Pointcut documentation.
+
+        See the Aspect::Pointcut documentation for more details.
 
     Advice
         A pointcut, with code that will run when it matches. The code can be
-        run before or after the matched sub is run.
+        run before or after the matched sub is run, or only on exceptions.
 
     Advice Code
-        The code that is run before or after a pointcut is matched. It can
-        modify the way that the matched sub is run, and the value it
-        returns.
+        The code that is run when a pointcut is matched. It can modify the
+        way that the matched sub is run, and the value it returns.
 
-    Weave
+    Weaving
         The installation of advice code on subs that match a pointcut.
         Weaving happens when you create the advice. Unweaving happens when
-        the advice goes out of scope.
+        the lexically-created advice goes out of scope.
 
     The Aspect
-        An object that installs advice. A way to package advice and other
-        Perl code, so that it is reusable.
+        An object or class that installs on or more Advice hooks.
+
+        A way to package advice and other Perl code, so that it is reusable.
 
   Features
     *   Create and remove pointcuts, advice, and aspects.
 
     *   Flexible pointcut language: select subs to match using string
-        equality, regexp, or "CODE" ref. Match currently running sub, or a
-        sub in the call flow. Build pointcuts composed of a logical
-        expression of other pointcuts, using conjunction, disjunction, and
-        negation.
+        equality, regexp, or "CODE" ref. Match currently running sub, a sub
+        in the call flow, calls in particular void, scalar, or array
+        contexts, or only the highest call in a set of recursive calls.
+
+    *   Build pointcuts composed of a logical expression of other pointcuts,
+        using conjunction, disjunction, and negation.
 
     *   In advice code, you can: modify parameter list for matched sub,
-        modify return value, decide if to proceed to matched sub, access
-        "CODE" ref for matched sub, and access the context of any call flow
-        pointcuts that were matched, if they exist.
+        modify return value, throw or suppress exceptions, decide whether or
+        not to proceed to matched sub, access "CODE" ref for matched sub,
+        and access the context of any call flow pointcuts that were matched,
+        if they exist.
 
     *   Add/remove advice and entire aspects during run-time. Scope of
         advice and aspect objects, is the scope of their effect.
@@ -153,12 +197,11 @@ DESCRIPTION
         class. They exist as an independent aspect, so the class remains
         unpolluted.
 
-    The "Aspect" module is different from "Hook::Lexwrap" (which it uses for
-    the actual wrapping) in two respects:
+    The "Aspect" module is different from "Hook::Lexwrap" in two respects:
 
-    *   Select join points using flexible pointcut language instead of the
+    *   Select join points using flexible pointcut language instead of just
         sub name. For example: select all calls to "Account" objects that
-        are in the call flow of "Company::make_report".
+        are called within "Company::make_report".
 
     *   More options when writing the advice code. You can, for example, run
         the original sub, or append parameters to it.
@@ -171,7 +214,7 @@ DESCRIPTION
     You will be mostly working with this package ("Aspect"), and the advice
     context package.
 
-    When you "use Aspect;" you will import a family of around a dozen
+    When you "use Aspect;" you will import a family of around fifteen
     functions. These are all factories that allow you to create pointcuts,
     advice, and aspects.
 
@@ -201,7 +244,7 @@ DESCRIPTION
         name as only parameter, returns true. The following will match all
         calls to subs whose name isa key in the hash %subs_to_match:
 
-          $p = call sub { exists $subs_to_match{shift()} }
+          $p = call sub { exists $subs_to_match{$_[0]} }
 
     Pointcuts can be combined to form logical expressions, because they
     overload "&", "|", and "!", with factories that create composite

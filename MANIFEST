@@ -53,6 +53,8 @@ Makefile.PL
 MANIFEST			This list of files
 META.yml
 README
+t/00_closure.t
+t/00_context.t
 t/01_compile.t
 t/10_pointcut.t
 t/11_pointcut_call.t
@@ -69,8 +71,6 @@ t/25_advice_after_returning.t
 t/26_advice_after_throwing.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
-t/assumptions/closure.t
-t/assumptions/context.t
 t/listenable.t
 t/rt_57417.t
 t/singleton.t
