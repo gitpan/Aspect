@@ -424,7 +424,7 @@ use Aspect::Point::AfterThrowing   ();
 use Aspect::Point::Around          ();
 use Aspect::Point::Before          ();
 
-our $VERSION = '0.97_03';
+our $VERSION = '0.97_04';
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
@@ -1078,8 +1078,50 @@ sub _LIBRARY {
 
 =pod
 
-=head1 ASPECT LIBRARY
+=head1 OPERATORS
 
+=head2 Pointcut &
+
+Overloading of bitwise C<&> for pointcut declarations allows a natural looking
+boolean "and" logic for pointcuts. When using the C<&> operator the combined
+pointcut expression will match if all pointcut subexpressions match.
+
+In the original Java AspectJ framework, the subexpressions are considered to
+be a union without an inherent order at all. In Perl you may treat them as
+ordered since they are ordered internally, but since all subexpressions run 
+anyway you should probably not do anything that relies on this order. The
+optimiser may do interesting things with order in future, or we may move to an
+unordered implementation.
+
+For more information, see L<Aspect::Pointcut::And>.
+
+=head2 Pointcut |
+
+Overloading of bitwise C<|> for pointcut declarations allows a natural looking
+boolean "or" logic for pointcuts. When using the C<|> operator the combined
+pointcut expression will match if either pointcut subexpressions match.
+
+The subexpressions are ostensibly considered without any inherent order, and
+you should treat them that way when you can. However, they are internally
+ordered and shortcutting will be applied as per normal Perl expressions. So for
+speed reasons, you may with to put cheap pointcut declarators before expensive
+ones where you can.
+
+The optimiser may do interesting things with order in future, or we may move to
+an unordered implementation. So as a general rule, avoid things that require
+order while using order to optimise where you can.
+
+For more information, see L<Aspect::Pointcut::Or>.
+
+=head2 Pointcut !
+
+Overload of negation C<!> for pointcut declarations allows a natural looking
+boolean "not" logic for pointcuts. When using the C<!> operator the resulting
+pointcut expression will match if the single subexpression does B<not> match.
+
+For more information, see L<Aspect::Pointcut::Not>.
+
+=head1 LIBRARY
 
 The main L<Aspect> distribution ships with the following set of libraries. These
 are not necesarily recommended or the best on offer. The are shipped with
@@ -1088,83 +1130,32 @@ B<Aspect> for convenience, because they have no additional CPAN dependencies.
 Their purpose is summarised below, but see their own documentation for more
 information.
 
-L<Aspect::Library::Singleton>
+=head2 Aspect::Library::Singleton
 
-Convert an existing class to function as a singleton and return the same object
-for every constructor call.
+L<Aspect::Library::Singleton> can be used to convert an existing class to
+function as a singleton and return the same object for every constructor call.
 
-L<Aspect::Library::Breakpoint>
+=head2 Aspect::Library::Breakpoint
 
-Inject debugging breakpoints into a program using the full power and complexity
-of the C<Aspect> pointcuts.
+L<Aspect::Library::Breakpoint> allows you to inject debugging breakpoints into
+a program using the full power and complexity of the C<Aspect> pointcuts.
 
-L<Aspect::Library::Wormhole>
+=head2 Aspect::Library::Wormhole
 
-A tool for passing objects down a call flow, without adding extra arguments to
-the frames between the source and the target. It is a tool for acquiring
-implicit context.
+L<Aspect::Library::Wormhole> is a tool for passing objects down a call flow,
+without adding extra arguments to the frames between the source and the target,
+letting a function implicit context.
 
-L<Aspect::Library::Listenable>
+=head2 Aspect::Library::Listenable
 
-An aspect for implementing the Listenable design pattern. It lets you define
-function as emitting events that can be registeded for by subscribers, and then
-add/remove subscribers for these events over time.
+L<Aspect::Library::Listenable> assysts in the implementation of the "Listenable"
+design pattern. It lets you define a function as emitting events that can be
+registed for by subscribers, and then add/remove subscribers for these events
+over time.
 
-When specific methods of the listenable are called, registered subscribers will
-be notified. This lets you build a general subscriber event system for your
-large program, as part of a plugin API or just for your own convenience.
-
-=head2 Advice
-
-An advice definition is just some code that will run on a match of some
-pointcut. The C<advice> can run around the entire call to allow
-lexical variables to capture custom information on the way into the function
-that will be needed when it exists, or it can be more specific and only run
-before the sub, after the sub runs and returns, after the sub throws an
-exception, or after the sub runs regardless of the result.
-
-Using a more specific advice type will allow the optimiser to generate
-smaller and faster hooks into your code.
-
-You create advice using C<around>, C<before>, C<after_returning>,
-C<after_throwing> or C<after()>.
-
-These take a C<CODE> ref, and a pointcut, and install the code on the subs
-that match the pointcut.  For example:
-
-  after {
-      print "Person::get_address has returned!\n";
-  } call 'Person::get_address';
-
-The advice code is run with one parameter: the advice context. You use it to
-learn how the matched sub was run, modify parameters, return value, and if it
-is run at all.
-
-When the advice is created in void context, it remains enabled until the
-interpreter dies, or the symbol table reloaded.
-
-However, advice code can also be applied to matching pointcuts
-(i.e. the advice is enabled) for only a specific scope by declare it in
-scalar context and storing the returned guard object.
-
-This allows you to neatly control enabling and disabling of advice:
-
-  SCOPE: {
-     my $advice = before { print "called!\n" } $pointcut;
-  
-     # Do something while the device is enabled
-  }
-  
-  # The advice is now disabled
-
-Please note that due to the internal mechanism used to achieve this lexical
-scoping, you may see a slight loss of memory and a slight slow down of the
-function, even after the advice has gone out of scope.
-
-Lexically creating and removing advice many times is recommended against,
-and doing so hundreds or thousands of times may result in significant
-memory consumption of performance loss for the functions matched by your
-pointcut.
+When the functions that are listenable are called, registered subscribers will
+be notified. This lets you build a general event subscription system for your
+program. This could be as part of a plugin API or just for your own convenience.
 
 =head1 INTERNALS
 
