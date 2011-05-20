@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Point ();
 
-our $VERSION = '0.97_02';
+our $VERSION = '0.97_03';
 our @ISA     = 'Aspect::Point';
 
 use constant type => 'around';
@@ -48,6 +48,25 @@ sub proceed {
 
 BEGIN {
 	*run_original = *proceed;
+}
+
+
+
+
+
+######################################################################
+# Optional XS Acceleration
+
+BEGIN {
+	local $@;
+	eval <<'END_PERL';
+use Class::XSAccessor 1.08 {
+	replace => 1,
+	getters => {
+		'original'   => 'original',
+	},
+};
+END_PERL
 }
 
 1;

@@ -6,7 +6,7 @@ use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.97_02';
+our $VERSION = '0.97_03';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -51,6 +51,25 @@ sub match_curry {
 
 sub compile_runtime {
 	$_[0]->[1];
+}
+
+
+
+
+
+######################################################################
+# Optional XS Acceleration
+
+BEGIN {
+	local $@;
+	eval <<'END_PERL';
+use Class::XSAccessor::Array 1.08 {
+	replace => 1,
+	getters => {
+		'compile_runtime' => 1,
+	},
+};
+END_PERL
 }
 
 1;
