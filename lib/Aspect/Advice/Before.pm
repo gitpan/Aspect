@@ -11,7 +11,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Before ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -24,7 +24,7 @@ sub _install {
 	# runtime checks instead of the original.
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
-	my $curried   = $pointcut->match_curry;
+	my $curried   = $pointcut->curry_runtime;
 	my $compiled  = $curried ? $curried->compiled_runtime : undef;
 	my $MATCH_RUN = $compiled ? '$compiled->()' : 1;
 
@@ -70,7 +70,7 @@ sub _install {
 			local \$_ = bless {
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
-				params       => \\\@_,
+				args         => \\\@_,
 				pointcut     => \$pointcut,
 				return_value => \$wantarray ? [ ] : undef,
 				original     => \$original,
@@ -82,10 +82,10 @@ sub _install {
 			# Array context needs some special return handling
 			if ( \$wantarray ) {
 				# Run the advice code
-				() = &\$code(\$_);
+				&\$code(\$_);
 
-				if ( \$_->proceed ) {
-					\@_ = \$_->params;
+				if ( \$_->{proceed} ) {
+					\@_ = \$_->args; ### Superfluous?
 					goto &\$original;
 				}
 
@@ -94,21 +94,17 @@ sub _install {
 			}
 
 			# Scalar and void have the same return handling.
-			# Just run the advice code differently.
-			if ( defined \$wantarray ) {
-				my \$dummy = &\$code(\$_);
-			} else {
-				&\$code(\$_);
-			}
+			&\$code(\$_);
 
 			# Do they want to shortcut?
-			return \$_->{return_value} unless \$_->proceed;
+			return \$_->{return_value} unless \$_->{proceed};
 
 			# Continue onwards to the original function
-			\@_ = \$_->params;
+			\@_ = \$_->args; ### Superfluous?
 			goto &\$original;
 		};
 END_PERL
+		$self->{installed}++;
 	}
 
 	# If this will run lexical we don't need a descoping hook
@@ -121,14 +117,25 @@ END_PERL
 	return sub { $out_of_scope = 1 };
 }
 
+# Check for pointcut usage not supported by the advice type
 sub _validate {
-	my $self = shift;
+	my $self     = shift;
+	my $pointcut = $self->pointcut;
 
-	# Special case.
 	# The method used by the Highest pointcut is incompatible
 	# with the goto optimisation used by the before() advice.
-	if ( $self->pointcut->match_contains('Aspect::Pointcut::Highest') ) {
+	if ( $pointcut->match_contains('Aspect::Pointcut::Highest') ) {
 		return 'The pointcut highest is not currently supported by before advice';
+	}
+
+	# Pointcuts using "throwing" are irrelevant in before advice
+	if ( $pointcut->match_contains('Aspect::Pointcut::Throwing') ) {
+		return 'The pointcut throwing is illegal when used by before advice';
+	}
+
+	# Pointcuts using "throwing" are irrelevant in before advice
+	if ( $pointcut->match_contains('Aspect::Pointcut::Returning') ) {
+		return 'The pointcut returning is illegal when used by before advice';
 	}
 
 	$self->SUPER::_validate(@_);
@@ -154,10 +161,15 @@ Aspect::Advice::Before - Execute code before a function is called
       print STDERR "Called my function " . $_->sub_name . "\n";
   
       # Shortcut calls to foo() to always be true
-      if ( $_->short_sub_name eq 'foo' ) {
-          $_->return_value(1);
+      if ( $_->short_name eq 'foo' ) {
+          return $_->return_value(1);
       }
   
+      # Add an extra flag to bar() but call as normal
+      if ( $_->short_name eq 'bar' ) {
+          $_->args( $_->args, 'flag' );
+      }
+
   } call qr/^ MyModule::\w+ $/
 
 =head1 DESCRIPTION

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Pointcut::Logic ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Pointcut::Logic';
 
 
@@ -120,9 +120,10 @@ sub compile_runtime {
 
 sub match_contains {
 	my $self  = shift;
-	my $count = $self->isa($_[0]) ? 1 : 0;
+	my $type  = shift;
+	my $count = $self->isa($type) ? 1 : 0;
 	foreach my $child ( @$self ) {
-		$count += $child->match_contains($_[0]);
+		$count += $child->match_contains($type);
 	}
 	return $count;
 }
@@ -135,7 +136,33 @@ sub match_runtime {
 	return 0;
 }
 
-sub match_curry {
+sub curry_weave {
+	my $self = shift;
+	my @list = @$self;
+
+	# Collapse nested ::And clauses
+	while ( scalar grep { $_->isa('Aspect::Pointcut::And') } @list ) {
+		@list = map {
+			$_->isa('Aspect::Pointcut::And') ? @$_ : $_
+		} @list;
+	}
+
+	# Curry down our children. Anything that is not relevant at weave
+	# time is considered to always match, but curries to null.
+	# In an AND scenario, any "always" match can be savely removed.
+	@list = grep { defined $_ } map { $_->curry_weave } @list;
+
+	# If none are left, curry us away to nothing
+	return unless @list;
+
+	# If only one remains, curry us away to just that child
+	return $list[0] if @list == 1;
+
+	# Create our clone to hold the curried subset
+	return ref($self)->new( @list );
+}
+
+sub curry_runtime {
 	my $self = shift;
 	my @list = @$self;
 
@@ -168,9 +195,9 @@ sub match_curry {
 	@list = grep { defined $_ } map {
 		$_->isa('Aspect::Pointcut::Call')
 		? $strip
-			? $_->match_curry($strip)
+			? $_->curry_runtime($strip)
 			: $_
-		: $_->match_curry($strip)
+		: $_->curry_runtime($strip)
 	} @list;
 
 	# If none are left, curry us away to nothing

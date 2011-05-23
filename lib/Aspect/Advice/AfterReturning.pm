@@ -9,11 +9,11 @@ use Carp::Heavy                   ();
 use Carp                          ();
 use Sub::Uplevel                  ();
 use Aspect::Hook                  ();
-use Aspect::Advice                ();
+use Aspect::Advice::After         ();
 use Aspect::Point::AfterReturning ();
 
-our $VERSION = '0.97_04';
-our @ISA     = 'Aspect::Advice';
+our $VERSION = '0.97_05';
+our @ISA     = 'Aspect::Advice::After';
 
 # NOTE: To simplify debugging of the generated code, all injected string
 # fragments will be defined in $UPPERCASE, and all lexical variables to be
@@ -28,7 +28,7 @@ sub _install {
 	# runtime checks instead of the original.
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
-	my $curried   = $pointcut->match_curry;
+	my $curried   = $pointcut->curry_runtime;
 	my $compiled  = $curried ? $curried->compiled_runtime : undef;
 	my $MATCH_RUN = $compiled ? '$compiled->()' : 1;
 
@@ -80,9 +80,8 @@ sub _install {
 				local \$_ = bless {
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
-					params       => \\\@_,
+					args         => \\\@_,
 					return_value => \$return,
-					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';
@@ -90,7 +89,7 @@ sub _install {
 				return \@\$return unless $MATCH_RUN;
 
 				# Execute the advice code
-				() = &\$code(\$_);
+				&\$code(\$_);
 
 				# Get the (potentially) modified return value
 				return \@{\$_->{return_value}};
@@ -104,9 +103,8 @@ sub _install {
 				local \$_ = bless {
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
-					params       => \\\@_,
+					args         => \\\@_,
 					return_value => \$return,
-					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';
@@ -114,7 +112,7 @@ sub _install {
 				return \$return unless $MATCH_RUN;
 
 				# Execute the advice code
-				my \$dummy = &\$code(\$_);
+				&\$code(\$_);
 				return \$_->{return_value};
 
 			} else {
@@ -125,9 +123,8 @@ sub _install {
 				local \$_ = bless {
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
-					params       => \\\@_,
+					args         => \\\@_,
 					return_value => undef,
-					exception    => '',
 					pointcut     => \$pointcut,
 					original     => \$original,
 				}, 'Aspect::Point::AfterReturning';
@@ -140,6 +137,7 @@ sub _install {
 			}
 		};
 END_PERL
+		$self->{installed}++;
 	}
 
 	# If this will run lexical we don't need a descoping hook
@@ -150,6 +148,19 @@ END_PERL
 	# parent object calling _install. This is less bullet-proof
 	# than the DESTROY-time self-executing blessed coderef
 	return sub { $out_of_scope = 1 };
+}
+
+# Check for pointcut usage not supported by the advice type
+sub _validate {
+	my $self     = shift;
+	my $pointcut = $self->pointcut;
+
+	# Pointcuts using "throwing" are irrelevant in before advice
+	if ( $pointcut->match_contains('Aspect::Pointcut::Throwing') ) {
+		return 'The pointcut throwing is illegal when used by after_returning advice';
+	}
+
+	$self->SUPER::_validate(@_);
 }
 
 1;
@@ -172,7 +183,7 @@ without throwing an exception.
       print STDERR "Called my function " . $_->sub_name . "\n";
   
       # Throw an exception if foo() returns 'bar'
-      if ( $_->short_sub_name eq 'foo' and $_->return_value eq 'bar' ) {
+      if ( $_->short_name eq 'foo' and $_->return_value eq 'bar' ) {
           $_->exception("Missing or invalid arguments to foo()");
       }
   

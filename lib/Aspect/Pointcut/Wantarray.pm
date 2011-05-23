@@ -5,7 +5,7 @@ use warnings;
 use Carp             ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant VOID   => 1;
@@ -43,8 +43,13 @@ sub new {
 ######################################################################
 # Weaving Methods
 
+# This is a run-time only pointcut of no value at weave time
+sub curry_weave {
+	return;
+}
+
 # For wantarray pointcuts we keep the original
-sub match_curry {
+sub curry_runtime {
 	return $_[0];
 }
 

@@ -12,7 +12,7 @@ use Aspect::Hook         ();
 use Aspect::Advice       ();
 use Aspect::Point::After ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -28,7 +28,7 @@ sub _install {
 	# runtime checks instead of the original.
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
-	my $curried   = $pointcut->match_curry;
+	my $curried   = $pointcut->curry_runtime;
 	my $compiled  = $curried ? $curried->compiled_runtime : undef;
 	my $MATCH_RUN = $compiled ? '$compiled->()' : 1;
 
@@ -80,7 +80,7 @@ sub _install {
 				local \$_ = bless {
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
-					params       => \\\@_,
+					args         => \\\@_,
 					return_value => \$return,
 					exception    => \$\@,
 					pointcut     => \$pointcut,
@@ -92,10 +92,10 @@ sub _install {
 				}
 
 				# Execute the advice code
-				() = &\$code(\$_);
+				&\$code(\$_);
 
 				# Throw the same (or modified) exception
-				my \$exception = \$_->exception;
+				my \$exception = \$_->{exception};
 				die \$exception if \$exception;
 
 				# Get the (potentially) modified return value
@@ -112,7 +112,7 @@ sub _install {
 				local \$_ = bless {
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
-					params       => \\\@_,
+					args         => \\\@_,
 					return_value => \$return,
 					exception    => \$\@,
 					pointcut     => \$pointcut,
@@ -125,10 +125,10 @@ sub _install {
 				}
 
 				# Execute the advice code
-				my \$dummy = &\$code(\$_);
+				&\$code(\$_);
 
 				# Throw the same (or modified) exception
-				my \$exception = \$_->exception;
+				my \$exception = \$_->{exception};
 				die \$exception if \$exception;
 
 				# Return the potentially-modified value
@@ -145,7 +145,7 @@ sub _install {
 			local \$_ = bless {
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
-				params       => \\\@_,
+				args         => \\\@_,
 				return_value => undef,
 				exception    => \$\@,
 				pointcut     => \$pointcut,
@@ -160,12 +160,13 @@ sub _install {
 			&\$code(\$_);
 
 			# Throw the same (or modified) exception
-			my \$exception = \$_->exception;
+			my \$exception = \$_->{exception};
 			die \$exception if \$exception;
 
 			return;
 		};
 END_PERL
+		$self->{installed}++;
 	}
 
 	# If this will run lexical we don't need a descoping hook
@@ -197,9 +198,12 @@ Aspect::Advice::After - Execute code after a function is called
       print STDERR "Called my function " . $_->sub_name . "\n";
   
       # Suppress exceptions AND alter the results to foo()
-      if ( $_->short_sub_name eq 'foo' ) {
-          $_->return_value(1) if $_->exception;
-          $_->return_value( $_->return_value + 1 );
+      if ( $_->short_name eq 'foo' ) {
+          if ( $_->exception ) {
+              $_->return_value(1);
+          } else {
+              $_->return_value( $_->return_value + 1 );
+          }
       }
   
   } call qr/^ MyModule::\w+ $/

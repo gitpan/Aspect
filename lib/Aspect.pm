@@ -409,6 +409,7 @@ use Aspect::Pointcut::Call         ();
 use Aspect::Pointcut::Cflow        ();
 use Aspect::Pointcut::Highest      ();
 use Aspect::Pointcut::Throwing     ();
+use Aspect::Pointcut::Returning    ();
 use Aspect::Pointcut::Wantarray    ();
 use Aspect::Advice                 ();
 use Aspect::Advice::After          ();
@@ -424,7 +425,7 @@ use Aspect::Point::AfterThrowing   ();
 use Aspect::Point::Around          ();
 use Aspect::Point::Before          ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
@@ -682,8 +683,31 @@ L<Aspect::Pointcut::Throwing>.
 
 =cut
 
-sub throwing ($) {
-	Aspect::Pointcut::Throwing->new(@_);
+sub throwing (;$) {
+	return( @_
+		? Aspect::Pointcut::Throwing->new(@_)
+		: Aspect::Pointcut::Not->new(
+			Aspect::Pointcut::Returning->new
+		)
+	);
+}
+
+=pod
+
+=head2 returning
+
+  after {
+      print "No exception\n";
+  } call 'Foo::bar' & returning;
+
+The C<returning> pointcut is used with C<after> advice types to indicate the
+join point should only occur when a function is returning B<without> throwing
+an exception.
+
+=cut
+
+sub returning () {
+	Aspect::Pointcut::Returning->new;
 }
 
 =pod
@@ -707,7 +731,7 @@ be very difficult.
 When a custom or unusual pattern of interception is needed, often all that is
 desired is to extend a relatively normal pointcut with an extra caveat.
 
-To allow for this scenario, B<Aspect> provides the C<is_true> pointcut.
+To allow for this scenario, B<Aspect> provides the C<true> pointcut.
 
 This pointcut allows you to specify any arbitrary code to match on. This code
 will be executed at run-time if the join point matches all previous conditions.
@@ -996,7 +1020,7 @@ sub aspect {
 	my $class = _LIBRARY(shift);
 	return $class->new(
 		lexical => defined wantarray,
-		params  => [ @_ ],
+		args    => [ @_ ],
 	);
 }
 
@@ -1042,7 +1066,7 @@ sub import {
 		# Install new generation API functions
 		foreach ( qw{
 			around after_returning after_throwing
-			true highest throwing
+			true highest throwing returning
 			wantlist wantscalar wantvoid
 		} ) {
 			Sub::Install::install_sub( {
@@ -1120,6 +1144,24 @@ boolean "not" logic for pointcuts. When using the C<!> operator the resulting
 pointcut expression will match if the single subexpression does B<not> match.
 
 For more information, see L<Aspect::Pointcut::Not>.
+
+=head1 ADVICE CONTEXT METHODS
+
+The following methods are available in the advice code for one or more advice
+types. Different sets of methods are available for the different advice types.
+
+The actual objects involved are those within the L<Aspect::Point> tree.
+
+=head2 type
+
+The C<type> method is a convenience provided in the situation something has a
+L<Aspect::Point> method and wants to know the advice declarator it is made for.
+
+Returns C<"before"> for L<Aspect::Advice::Before> advice, C<"after"> for
+L<Aspect::Advice::After> advice, C<"after_returning"> for
+L<Aspect::Advice::AfterReturning> advice, C<"after_throwing"> for
+L<Aspect::Advice::AfterThrowing> advice, or C<"around"> for
+L<Aspect::Advice::Around> advice.
 
 =head1 LIBRARY
 

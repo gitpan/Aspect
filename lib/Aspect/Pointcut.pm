@@ -40,7 +40,7 @@ use Aspect::Pointcut::Or  ();
 use Aspect::Pointcut::And ();
 use Aspect::Pointcut::Not ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 
 use overload (
 	# Keep traditional Perl boolification and stringification
@@ -156,10 +156,11 @@ sub match_all {
 	my $self    = shift;
 	my @matches = ();
 
-	# Generate the compiled form of the weave-time function feature
-	my $compiled = $self->compiled_weave;
+	# Curry the pointcut and compile the weave-time function
+	my $curried  = $self->curry_weave;
+	my $compiled = $curried ? $self->compiled_weave : sub () { 1 };
 	unless ( $compiled ) {
-		die "Failed to generate filter ->compile_weave";
+		die "Failed to generate weave filter";
 	}
 
 	# Quick initial root package scan to remove the need
@@ -295,11 +296,11 @@ sub compiled_runtime {
 
 =head2 match_contains
 
-  my $contains_any = $pointcut->match_contains('Aspect::Pointcut::Call');
+  my $calls = $pointcut->match_contains('Aspect::Pointcut::Call');
 
-The C<match_contains> method provides a convenience for the optimisation
-system which is used to check for the existance of a particular condition
-type anywhere within the pointcut object tree.
+The C<match_contains> method provides a convenience for the validation and
+optimisation systems. It is used to check for the existance of a particular
+condition type anywhere within the pointcut object tree.
 
 Returns the number of instances of a particular pointcut type within the tree.
 
@@ -313,9 +314,30 @@ sub match_contains {
 
 =pod
 
-=head2 match_curry
+=head2 match_always
 
-  my $optimized_pointcut = $raw_pointcut->match_curry;
+  my $always = $pointcut->match_contains('Aspect::Pointcut::Throwing');
+
+The C<match_always> method provides a convenience for the validation and
+optimisation systems. It is used to check that a particular condition type will
+be tested at least once for a matching join point, regardless of which path
+the match takes through branching pointcut logic.
+
+Returns true if an expression type is encounter at least once in all branches,
+or false if there is any branch path that can be taken in which the condition
+won't be encountered.
+
+=cut
+
+sub match_always {
+	die "CODE NOT IMPLEMENTED";
+}
+
+=pod
+
+=head2 curry_runtime
+
+  my $optimized_pointcut = $raw_pointcut->curry_runtime;
 
 In a production system, pointcut declarations can result in large and
 complex B<Aspect::Pointcut> object trees.
@@ -344,9 +366,29 @@ away to nothing, and no further testing needs to be done at run-time.
 
 =cut
 
-sub match_curry {
+sub curry_runtime {
 	my $class = ref $_[0] || $_[0];
-	die("Method 'match_curry' not implemented in class '$class'");
+	die("Method 'curry_runtime' not implemented in class '$class'");
+}
+
+=pod
+
+=head2 curry_weave
+
+The C<curry_weave> method is similar to the C<curry_runtime> method, except
+that instead of reducing the pointcut to only elements that are relevant at
+run-time, it reduces the pointcut to only elements that are relevant at weave
+time.
+
+By remove purely run-time elements, the compile weave test code is made both
+faster and more accurate (some complicated situations can occur when there is
+a L<Aspect::Pointcut::Not> in the tree).
+
+=cut
+
+sub curry_weave {
+	my $class = ref $_[0] || $_[0];
+	die("Method 'curry_weave' not implemented in class '$class'");
 }
 
 sub match_runtime {

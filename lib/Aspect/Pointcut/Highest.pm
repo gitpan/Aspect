@@ -8,7 +8,7 @@ use Params::Util                       ();
 use Aspect::Pointcut                   ();
 use Aspect::Pointcut::Highest::Cleanup ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -29,10 +29,15 @@ sub new {
 ######################################################################
 # Weaving Methods
 
+# The highest pointcut is a run-time only pointcut
+sub curry_weave {
+	return;
+}
+
 # Call pointcuts curry away to null, because they are the basis
 # for which methods to hook in the first place. Any method called
 # at run-time has already been checked.
-sub match_curry {
+sub curry_runtime {
 	bless [ 0 ], $_[0];
 }
 

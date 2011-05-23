@@ -12,7 +12,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Around ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -25,7 +25,7 @@ sub _install {
 	# runtime checks instead of the original.
 	# Because $MATCH_RUN is used in boolean conditionals, if there
 	# is nothing to do the compiler will optimise away the code entirely.
-	my $curried   = $pointcut->match_curry;
+	my $curried   = $pointcut->curry_runtime;
 	my $compiled  = $curried ? $curried->compiled_runtime : undef;
 	my $MATCH_RUN = $compiled ? '$compiled->()' : 1;
 
@@ -71,9 +71,8 @@ sub _install {
 			local \$_ = bless {
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
-				params       => \\\@_,
+				args         => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
-				exception    => '',
 				pointcut     => \$pointcut,
 				original     => \$original,
 			}, 'Aspect::Point::Around';
@@ -83,7 +82,7 @@ sub _install {
 			# Array context needs some special return handling
 			if ( \$wantarray ) {
 				# Run the advice code
-				() = Sub::Uplevel::uplevel(
+				Sub::Uplevel::uplevel(
 					1, \$code, \$_,
 				);
 
@@ -92,20 +91,14 @@ sub _install {
 			}
 
 			# Scalar and void have the same return handling.
-			# Just run the advice code differently.
-			if ( defined \$wantarray ) {
-				my \$dummy = Sub::Uplevel::uplevel(
-					1, \$code, \$_,
-				);
-			} else {
-				Sub::Uplevel::uplevel(
-					1, \$code, \$_,
-				);
-			}
+			Sub::Uplevel::uplevel(
+				1, \$code, \$_,
+			);
 
 			return \$_->{return_value};
 		};
 END_PERL
+		$self->{installed}++;
 	}
 
 	# If this will run lexical we don't need a descoping hook
@@ -116,6 +109,24 @@ END_PERL
 	# parent object calling _install. This is less bullet-proof
 	# than the DESTROY-time self-executing blessed coderef
 	return sub { $out_of_scope = 1 };
+}
+
+# Check for pointcut usage not supported by the advice type
+sub _validate {
+	my $self     = shift;
+	my $pointcut = $self->pointcut;
+
+	# Pointcuts using "throwing" are irrelevant in before advice
+	if ( $pointcut->match_contains('Aspect::Pointcut::Throwing') ) {
+		return 'The pointcut throwing is illegal when used by around advice';
+	}
+
+	# Pointcuts using "throwing" are irrelevant in before advice
+	if ( $pointcut->match_contains('Aspect::Pointcut::Returning') ) {
+		return 'The pointcut returning is illegal when used by around advice';
+	}
+
+	$self->SUPER::_validate(@_);
 }
 
 1;

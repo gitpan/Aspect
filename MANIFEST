@@ -46,6 +46,7 @@ lib/Aspect/Pointcut/Highest/Cleanup.pm
 lib/Aspect/Pointcut/Logic.pm
 lib/Aspect/Pointcut/Not.pm
 lib/Aspect/Pointcut/Or.pm
+lib/Aspect/Pointcut/Returning.pm
 lib/Aspect/Pointcut/Throwing.pm
 lib/Aspect/Pointcut/True.pm
 lib/Aspect/Pointcut/Wantarray.pm
@@ -60,16 +61,18 @@ t/01_compile.t
 t/10_pointcut.t
 t/11_pointcut_call.t
 t/12_pointcut_cflow.t
-t/13_pointcut_if.t
+t/13_pointcut_true.t
 t/14_pointcut_highest.t
 t/15_pointcut_wantarray.t
 t/16_pointcut_throwing.t
+t/17_pointcut_returning.t
 t/21_advice_around.t
 t/22_advice_around.t
 t/23_advice_before.t
 t/24_advice_after.t
 t/25_advice_after_returning.t
 t/26_advice_after_throwing.t
+t/30_return_value.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
 t/listenable.t

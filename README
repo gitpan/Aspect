@@ -567,6 +567,15 @@ FUNCTIONS
     For more information on the "throwing" pointcut see
     Aspect::Pointcut::Throwing.
 
+  returning
+      after {
+          print "No exception\n";
+      } call 'Foo::bar' & returning;
+
+    The "returning" pointcut is used with "after" advice types to indicate
+    the join point should only occur when a function is returning without
+    throwing an exception.
+
   true
       # Intercept an adjustable random percentage of calls to a function
       our $RATE = 0.01;
@@ -586,7 +595,7 @@ FUNCTIONS
     that is desired is to extend a relatively normal pointcut with an extra
     caveat.
 
-    To allow for this scenario, Aspect provides the "is_true" pointcut.
+    To allow for this scenario, Aspect provides the "true" pointcut.
 
     This pointcut allows you to specify any arbitrary code to match on. This
     code will be executed at run-time if the join point matches all previous
@@ -848,6 +857,24 @@ OPERATORS
     does not match.
 
     For more information, see Aspect::Pointcut::Not.
+
+ADVICE CONTEXT METHODS
+    The following methods are available in the advice code for one or more
+    advice types. Different sets of methods are available for the different
+    advice types.
+
+    The actual objects involved are those within the Aspect::Point tree.
+
+  type
+    The "type" method is a convenience provided in the situation something
+    has a Aspect::Point method and wants to know the advice declarator it is
+    made for.
+
+    Returns "before" for Aspect::Advice::Before advice, "after" for
+    Aspect::Advice::After advice, "after_returning" for
+    Aspect::Advice::AfterReturning advice, "after_throwing" for
+    Aspect::Advice::AfterThrowing advice, or "around" for
+    Aspect::Advice::Around advice.
 
 LIBRARY
     The main Aspect distribution ships with the following set of libraries.

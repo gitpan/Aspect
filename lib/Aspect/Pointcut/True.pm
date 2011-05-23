@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Pointcut ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -14,9 +14,14 @@ our @ISA     = 'Aspect::Pointcut';
 ######################################################################
 # Weaving Methods
 
-# The condition pointcut contains no state and doesn't need to be curried.
+# The true pointcut is a run-time only pointcut
+sub curry_weave {
+	return;
+}
+
+# The true pointcut contains no state and doesn't need to be curried.
 # Simply return it as-is and reuse it everywhere.
-sub match_curry {
+sub curry_runtime {
 	return $_[0];
 }
 

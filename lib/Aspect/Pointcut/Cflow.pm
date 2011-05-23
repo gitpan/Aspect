@@ -8,7 +8,7 @@ use Aspect::Pointcut       ();
 use Aspect::Pointcut::Call ();
 use Aspect::Point::Static  ();
 
-our $VERSION = '0.97_04';
+our $VERSION = '0.97_05';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant KEY  => 0;
@@ -42,9 +42,15 @@ sub new {
 ######################################################################
 # Weaving Methods
 
+# The cflow pointcut is currently of no value at weave time, because it is
+# actually implemented as something closer to cflowbelow.
+sub curry_weave {
+	return;
+}
+
 # The cflow pointcuts do not curry at all.
 # So they don't need to clone, and can be used directly.
-sub match_curry {
+sub curry_runtime {
 	return $_[0];
 }
 
@@ -69,7 +75,7 @@ sub compile_runtime {
 		my $context = bless {
 			sub_name => $caller->{sub_name},
 			pointcut => $_->{pointcut},
-			params   => $caller->{params},
+			args     => $caller->{args},
 		}, 'Aspect::Point::Static';
 		$_->{$self->[KEY]} = $context;
 		return 1;
@@ -91,7 +97,7 @@ sub caller_info {
 	return defined $call_info{calling_package}
 		? {
 			%call_info,
-			params => [
+			args => [
 				$call_info{has_params} ? @DB::args : ()
 			],
 		} : 0;
