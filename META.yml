@@ -33,4 +33,4 @@ resources:
   ChangeLog: http://fisheye2.atlassian.com/changelog/cpan/trunk/Aspect
   license: http://dev.perl.org/licenses/
   repository: http://svn.ali.as/cpan/trunk/Aspect
-version: 0.97_05
+version: 0.97_06

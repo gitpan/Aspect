@@ -12,7 +12,7 @@ use Aspect::Hook         ();
 use Aspect::Advice       ();
 use Aspect::Point::After ();
 
-our $VERSION = '0.97_05';
+our $VERSION = '0.97_06';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -217,11 +217,11 @@ exception.
 The C<after> advice type should be used when you need to potentially make
 multiple different changes to the returned value or the thrown exception.
 
-If you only care about normally returned values you should use
-C<after_returning> (L<Aspect::Advice::AfterReturning>) instead.
+If you only care about normally returned values you should use C<returning> in
+the pointcut to exclude join points occuring due to exceptions.
 
-If you only care about handling exceptions you should use C<after_throwing>
-(L<Aspect::Advice::AfterThrowing>) instead.
+If you only care about handling exceptions you should use C<throwing> in the
+pointcut to exclude join points occuring due to normal return.
 
 =head1 AUTHORS
 

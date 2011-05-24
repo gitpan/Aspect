@@ -51,11 +51,13 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
   
   
   # Catch and handle unexpected exceptions in a function into a formal object
-  after_throwing {
+  after {
       $_->exception(
           Exception::Unexpected->new($_->exception)
       );
-  } ! throwing qr/^Exception::(?:Expected|Unexpected)$/;
+  } throwing()
+  & ! throwing('Exception::Expected')
+  & ! throwing('Exception::Unexpected');
   
   
   
@@ -395,37 +397,33 @@ use warnings;
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed?
 # -- ADAMK
-use Carp::Heavy                    ();
-use Carp                           ();
-use Params::Util              1.00 ();
-use Sub::Install              0.92 ();
-use Sub::Uplevel            0.2002 ();
-use Aspect::Pointcut               ();
-use Aspect::Pointcut::Or           ();
-use Aspect::Pointcut::And          ();
-use Aspect::Pointcut::Not          ();
-use Aspect::Pointcut::True         ();
-use Aspect::Pointcut::Call         ();
-use Aspect::Pointcut::Cflow        ();
-use Aspect::Pointcut::Highest      ();
-use Aspect::Pointcut::Throwing     ();
-use Aspect::Pointcut::Returning    ();
-use Aspect::Pointcut::Wantarray    ();
-use Aspect::Advice                 ();
-use Aspect::Advice::After          ();
-use Aspect::Advice::AfterReturning ();
-use Aspect::Advice::AfterThrowing  ();
-use Aspect::Advice::Around         ();
-use Aspect::Advice::Before         ();
-use Aspect::Point                  ();
-use Aspect::Point::Static          ();
-use Aspect::Point::After           ();
-use Aspect::Point::AfterReturning  ();
-use Aspect::Point::AfterThrowing   ();
-use Aspect::Point::Around          ();
-use Aspect::Point::Before          ();
+use Carp::Heavy                 ();
+use Carp                        ();
+use Params::Util           1.00 ();
+use Sub::Install           0.92 ();
+use Sub::Uplevel         0.2002 ();
+use Aspect::Pointcut            ();
+use Aspect::Pointcut::Or        ();
+use Aspect::Pointcut::And       ();
+use Aspect::Pointcut::Not       ();
+use Aspect::Pointcut::True      ();
+use Aspect::Pointcut::Call      ();
+use Aspect::Pointcut::Cflow     ();
+use Aspect::Pointcut::Highest   ();
+use Aspect::Pointcut::Throwing  ();
+use Aspect::Pointcut::Returning ();
+use Aspect::Pointcut::Wantarray ();
+use Aspect::Advice              ();
+use Aspect::Advice::After       ();
+use Aspect::Advice::Around      ();
+use Aspect::Advice::Before      ();
+use Aspect::Point               ();
+use Aspect::Point::Static       ();
+use Aspect::Point::After        ();
+use Aspect::Point::Around       ();
+use Aspect::Point::Before       ();
 
-our $VERSION = '0.97_05';
+our $VERSION = '0.97_06';
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
@@ -684,12 +682,7 @@ L<Aspect::Pointcut::Throwing>.
 =cut
 
 sub throwing (;$) {
-	return( @_
-		? Aspect::Pointcut::Throwing->new(@_)
-		: Aspect::Pointcut::Not->new(
-			Aspect::Pointcut::Returning->new
-		)
-	);
+	Aspect::Pointcut::Throwing->new(@_);
 }
 
 =pod
@@ -793,95 +786,9 @@ For more information, see L<Aspect::Advice::Before>.
 
 sub before (&$) {
 	Aspect::Advice::Before->new(
+		lexical  => defined wantarray,
 		code     => $_[0],
 		pointcut => $_[1],
-		lexical  => defined wantarray,
-	);
-}
-
-=pod
-
-=head2 after_returning
-
-  # Hijack a return value for a function
-  after_returning {
-      $_->return_value(1);
-  } call 'My::true_or_false' & wantscalar;
-
-The C<after_returning> declarator is used to create advice in which the advice
-code is run after the join point has executed, but before the result of the
-function has been returned to the caller.
-
-Notably, the advice code is only triggered when the function returns normally,
-and does B<not> run the advice code if the function throws an exception.
-
-This makes C<after_returning> the prefered and safest advice type for use in
-simple situations where you just want to alter a function result, without
-having to consider the multitude of potential exceptions that might be thrown.
-
-For more information, see L<Aspect::Advice::AfterReturning>.
-
-=cut
-
-sub after_returning (&$) {
-	Aspect::Advice::AfterReturning->new(
-		code     => $_[0],
-		pointcut => $_[1],
-		lexical  => defined wantarray,
-	);
-}
-
-=pod
-
-=head2 after_throwing
-
-  # Ignore one specific exception, returning a neutral
-  after_throwing {
-    $_->return_value(5);
-  } call 'My::satisfaction'
-  & throwing 'Exception::NoData';
-
-The C<after_throwing> declarator is used to create advice in which the advice
-code will be run after the join point has run, but before an exception thrown
-from within the join point is propogated up to the called.
-
-Notably, the advice code is only triggered if the function throws an exception,
-and does B<not> run the advice code when the function returns normally.
-
-This makes c<after_throwing> the B<Aspect> equivalent of the kind of try/catch
-handler provided by modules such as L<Error> or L<Try::Tiny>, except that it
-provides much more exotic ways to target which exceptions should be caught,
-and when.
-
-For example, the following intercepts two different types of exception in two
-entirely different places within your code using the same exception handler.
-
-  after_throwing {
-      print "Oops!\n";
-  } ( call 'My::foo' & throwing 'Exception::One' )
-  | ( call 'My::bar' & throwing 'Exception::Two' );
-
-Also, the Aspect-Oriented Programming approach does not automatically
-suppress the exception. In the "Oops!" example above the exception is still
-in the middle of being thrown, and will continue to propogate upwards as
-normal.
-
-The advice was used not to handle the exception, but to monitor it instead.
-
-This ease of tracking exceptions of a particular type without interrupting the
-functionality of the code (and which can be enabled and disabled as needed)
-is a big part of what makes B<Aspect> popular for tracing, logging and
-debugging systems.
-
-For more information, see L<Aspect::Advice::AfterThrowing>.
-
-=cut
-
-sub after_throwing (&$) {
-	Aspect::Advice::AfterThrowing->new(
-		code     => $_[0],
-		pointcut => $_[1],
-		lexical  => defined wantarray,
 	);
 }
 
@@ -913,9 +820,31 @@ For more information, see L<Aspect::Advice::After>.
 
 sub after (&$) {
 	Aspect::Advice::After->new(
+		lexical  => defined wantarray,
 		code     => $_[0],
 		pointcut => $_[1],
+	);
+}
+
+sub after_returning (&$) {
+	Aspect::Advice::After->new(
 		lexical  => defined wantarray,
+		code     => $_[0],
+		pointcut => Aspect::Pointcut::And->new(
+			Aspect::Pointcut::Returning->new,
+			$_[1],
+		),
+	);
+}
+
+sub after_throwing (&$) {
+	Aspect::Advice::After->new(
+		lexical  => defined wantarray,
+		code     => $_[0],
+		pointcut => Aspect::Pointcut::And->new(
+			Aspect::Pointcut::Throwing->new,
+			$_[1],
+		),
 	);
 }
 
@@ -975,9 +904,9 @@ For more information, see L<Aspect::Advice::Around>.
 
 sub around (&$) {
 	Aspect::Advice::Around->new(
+		lexical  => defined wantarray,
 		code     => $_[0],
 		pointcut => $_[1],
-		lexical  => defined wantarray,
 	);
 }
 
@@ -1065,9 +994,10 @@ sub import {
 	unless ( $legacy ) {
 		# Install new generation API functions
 		foreach ( qw{
-			around after_returning after_throwing
-			true highest throwing returning
+			around
+			throwing returning
 			wantlist wantscalar wantvoid
+			true highest
 		} ) {
 			Sub::Install::install_sub( {
 				code => $_,
@@ -1158,9 +1088,7 @@ The C<type> method is a convenience provided in the situation something has a
 L<Aspect::Point> method and wants to know the advice declarator it is made for.
 
 Returns C<"before"> for L<Aspect::Advice::Before> advice, C<"after"> for
-L<Aspect::Advice::After> advice, C<"after_returning"> for
-L<Aspect::Advice::AfterReturning> advice, C<"after_throwing"> for
-L<Aspect::Advice::AfterThrowing> advice, or C<"around"> for
+L<Aspect::Advice::After> advice, or C<"around"> for
 L<Aspect::Advice::Around> advice.
 
 =head1 LIBRARY

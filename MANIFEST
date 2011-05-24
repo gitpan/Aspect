@@ -18,10 +18,9 @@ inc/Module/Install/WriteAll.pm
 lib/Aspect.pm
 lib/Aspect/Advice.pm
 lib/Aspect/Advice/After.pm
-lib/Aspect/Advice/AfterReturning.pm
-lib/Aspect/Advice/AfterThrowing.pm
 lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
+lib/Aspect/Guard.pm
 lib/Aspect/Hook.pm
 lib/Aspect/Library.pm
 lib/Aspect/Library/Breakpoint.pm
@@ -32,8 +31,6 @@ lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
 lib/Aspect/Point.pm
 lib/Aspect/Point/After.pm
-lib/Aspect/Point/AfterReturning.pm
-lib/Aspect/Point/AfterThrowing.pm
 lib/Aspect/Point/Around.pm
 lib/Aspect/Point/Before.pm
 lib/Aspect/Point/Static.pm
@@ -42,7 +39,6 @@ lib/Aspect/Pointcut/And.pm
 lib/Aspect/Pointcut/Call.pm
 lib/Aspect/Pointcut/Cflow.pm
 lib/Aspect/Pointcut/Highest.pm
-lib/Aspect/Pointcut/Highest/Cleanup.pm
 lib/Aspect/Pointcut/Logic.pm
 lib/Aspect/Pointcut/Not.pm
 lib/Aspect/Pointcut/Or.pm

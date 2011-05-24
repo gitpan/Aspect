@@ -8,7 +8,7 @@ use Aspect::Pointcut            ();
 use Aspect::Pointcut::Not       ();
 use Aspect::Pointcut::Returning ();
 
-our $VERSION = '0.97_05';
+our $VERSION = '0.97_06';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -21,6 +21,14 @@ our @ISA     = 'Aspect::Pointcut';
 sub new {
 	my $class = shift;
 	my $spec  = shift;
+
+	# Handle the any exception case
+	unless ( defined $spec ) {
+		return bless [
+			$spec,
+			"\$_->{exception}",
+		], $class;
+	}
 
 	# Handle a specific die message
 	if ( Params::Util::_STRING($spec) ) {

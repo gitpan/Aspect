@@ -5,7 +5,7 @@ use warnings;
 use Carp             ();
 use Aspect::Pointcut ();
 
-our $VERSION = '0.97_05';
+our $VERSION = '0.97_06';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -21,7 +21,6 @@ sub curry_weave {
 }
 
 # Exception-related pointcuts do not curry.
-# (But maybe they should if we specialise to an AfterReturning advice hook)
 sub curry_runtime {
 	return $_[0];
 }
