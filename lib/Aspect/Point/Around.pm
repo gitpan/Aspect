@@ -15,62 +15,81 @@ use strict;
 use warnings;
 use Aspect::Point ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Point';
 
 use constant type => 'around';
-
-sub original {
-	$_[0]->{original};
-}
-
-sub proceed {
-	my $self = shift;
-
-	return $self->return_value(
-		Sub::Uplevel::uplevel(
-			2,
-			$self->{original},
-			@{$self->{args}},
-		)
-	) if $self->{wantarray};
-
-	return $self->return_value(
-		scalar Sub::Uplevel::uplevel(
-			2,
-			$self->{original},
-			@{$self->{args}},
-		)
-	) if defined $self->{wantarray};
-
-	return Sub::Uplevel::uplevel(
-		2,
-		$self->{original},
-		@{$self->{args}},
-	);
-}
-
-BEGIN {
-	*run_original = *proceed;
-}
 
 
 
 
 
 ######################################################################
-# Optional XS Acceleration
+# Aspect::Point Methods
+
+sub exception {
+	Carp::croak("Cannot call exception in around advice");
+}
+
+sub return_value {
+	my $self = shift;
+	my $want = $self->{wantarray};
+
+	# Handle usage in getter form
+	if ( defined CORE::wantarray() ) {
+		# Let the inherent magic of Perl do the work between the
+		# list and scalar context calls to return_value
+		return @{$self->{return_value}} if $want;
+		return   $self->{return_value}  if defined $want;
+		return;
+	}
+
+	# We've been provided a return value
+	if ( $want ) {
+		@{$self->{return_value}} = @_;
+	} elsif ( defined $want ) {
+		$self->{return_value} = pop;
+	}
+}
+
+sub proceed {
+	my $self = shift;
+
+	local $_ = ${$self->{topic}};
+
+	if ( $self->{wantarray} ) {
+		$self->return_value(
+			Sub::Uplevel::uplevel(
+				2,
+				$self->{original},
+				@{$self->{args}},
+			)
+		);
+
+	} elsif ( defined $self->{wantarray} ) {
+		$self->return_value(
+			scalar Sub::Uplevel::uplevel(
+				2,
+				$self->{original},
+				@{$self->{args}},
+			)
+		);
+
+	} else {
+		Sub::Uplevel::uplevel(
+			2,
+			$self->{original},
+			@{$self->{args}},
+		);
+	}
+
+	${$self->{topic}} = $_;
+
+	return;
+}
 
 BEGIN {
-	local $@;
-	eval <<'END_PERL';
-use Class::XSAccessor 1.08 {
-	replace => 1,
-	getters => {
-		'original'   => 'original',
-	},
-};
-END_PERL
+	*run_original = *proceed;
 }
 
 1;

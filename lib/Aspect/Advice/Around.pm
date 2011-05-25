@@ -12,7 +12,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Around ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -27,7 +27,7 @@ sub _install {
 	# is nothing to do the compiler will optimise away the code entirely.
 	my $curried   = $pointcut->curry_runtime;
 	my $compiled  = $curried ? $curried->compiled_runtime : undef;
-	my $MATCH_RUN = $compiled ? '$compiled->()' : 1;
+	my $MATCH_RUN = $compiled ? 'do { local $_ = $Aspect::POINT; $compiled->() }' : 1;
 
 	# When an aspect falls out of scope, we don't attempt to remove
 	# the generated hook code, because it might (for reasons potentially
@@ -68,34 +68,30 @@ sub _install {
 
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
-			local \$_ = bless {
+			local \$Aspect::POINT = bless {
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				args         => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
 				pointcut     => \$pointcut,
 				original     => \$original,
+				topic        => \\\$_,
 			}, 'Aspect::Point::Around';
 
+			# Can we shortcut the advice code
 			goto &\$original unless $MATCH_RUN;
 
-			# Array context needs some special return handling
-			if ( \$wantarray ) {
-				# Run the advice code
+			# Run the advice code
+			SCOPE: {
+				local \$_ = \$Aspect::POINT;
 				Sub::Uplevel::uplevel(
-					1, \$code, \$_,
+					1, \$code, \$Aspect::POINT,
 				);
-
-				# Don't run the original
-				return \@{\$_->{return_value}};
 			}
 
-			# Scalar and void have the same return handling.
-			Sub::Uplevel::uplevel(
-				1, \$code, \$_,
-			);
-
-			return \$_->{return_value};
+			# Return the result
+			return \@{\$Aspect::POINT->{return_value}} if \$wantarray;
+			return \$Aspect::POINT->{return_value};
 		};
 END_PERL
 		$self->{installed}++;

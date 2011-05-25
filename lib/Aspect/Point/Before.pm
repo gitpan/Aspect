@@ -8,6 +8,8 @@ Aspect::Point - The Join Point context for "before" advice code
 
 =head1 SYNOPSIS
 
+
+
 =head1 METHODS
 
 =cut
@@ -16,39 +18,47 @@ use strict;
 use warnings;
 use Aspect::Point ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Point';
 
 use constant type => 'before';
-
-sub original {
-	$_[0]->{original};
-}
-
-sub proceed {
-	@_ > 1 ? $_[0]->{proceed} = $_[1] : $_[0]->{proceed};
-}
 
 
 
 
 
 ######################################################################
-# Optional XS Acceleration
+# Aspect::Point Methods
 
-BEGIN {
-	local $@;
-	eval <<'END_PERL';
-use Class::XSAccessor 1.08 {
-	replace => 1,
-	getters => {
-		'original'   => 'original',
-	},
-	accessors => {
-		'proceed' => 'proceed',
-	},
-};
-END_PERL
+sub proceed {
+	Carp::croak("Cannot call proceed in before advice");
+}
+
+sub exception {
+	Carp::croak("Cannot call exception in before advice");
+}
+
+sub return_value {
+	my $self = shift;
+	my $want = $self->{wantarray};
+
+	# Handle usage in getter form
+	if ( defined CORE::wantarray() ) {
+		# Let the inherent magic of Perl do the work between the
+		# list and scalar context calls to return_value
+		return @{$self->{return_value}} if $want;
+		return   $self->{return_value}  if defined $want;
+		return;
+	}
+
+	# Having provided a return value, suppress any exceptions
+	# and don't proceed if applicable.
+	$self->{proceed} = 0;
+	if ( $want ) {
+		@{$self->{return_value}} = @_;
+	} elsif ( defined $want ) {
+		$self->{return_value} = pop;
+	}
 }
 
 1;

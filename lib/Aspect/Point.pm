@@ -7,20 +7,20 @@ package Aspect::Point;
 Aspect::Point - The Join Point context
 
 =head1 SYNOPSIS
-  
+
   # An anonymous function suitable for use as advice code
   # across all advice types (as it uses no limited access methods)
   my $advice_code = sub {
-     print $_->type;         # The advice type ('before')
-     print $_->pointcut;     # The matching pointcut ($pointcut)
-     print $_->enclosing;    # Access cflow pointcut advice context
-     print $_->sub_name;     # The full package_name::sub_name
-     print $_->package_name; # The package name ('Person')
-     print $_->short_name;   # The sub name (a get or set method)
-     print $_->self;         # 1st parameter to the matching sub
-     print ($_->args)[1];    # 2nd parameter to the matching sub
-     $_->original->(x => 3); # Call matched sub independently
-     $->return_value(4)      # Set the return value
+      print $_->type;           # The advice type ('before')
+      print $_->pointcut;       # The matching pointcut ($pointcut)
+      print $_->enclosing;      # Access cflow pointcut advice context
+      print $_->sub_name;       # The full package_name::sub_name
+      print $_->package_name;   # The package name ('Person')
+      print $_->short_name;     # The sub name (a get or set method)
+      print $_->self;           # 1st parameter to the matching sub
+      print ($_->args)[1];      # 2nd parameter to the matching sub
+      $_->original->( x => 3 ); # Call matched sub independently
+      $_->return_value(4)       # Set the return value
   };
 
 =head1 DESCRIPTION
@@ -62,7 +62,7 @@ on C<Person>?
 
 You can access cflow context in the synopsis above, by calling:
 
-  $point->enclosing;
+  $point->enclosing
 
 You get it from the main advice join point by calling a method named after
 the context key used in the cflow spec (which is "enclosing" if a custom name
@@ -115,6 +115,15 @@ that eventually reached the get/set on C<Person>:
 
 =head1 METHODS
 
+=head2 type
+
+The C<type> method is a convenience provided in the situation something has a
+L<Aspect::Point> method and wants to know the advice declarator it is made for.
+
+Returns C<"before"> in L<Aspect::Advice::Before> advice, C<"after"> in
+L<Aspect::Advice::After> advice, or C<"around"> in
+L<Aspect::Advice::Around> advice.
+
 =cut
 
 use strict;
@@ -123,7 +132,7 @@ use Carp                  ();
 use Sub::Uplevel          ();
 use Aspect::Point::Static ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 
 
 
@@ -158,6 +167,25 @@ Returns an object which is a sub-class of L<Aspect::Pointcut>.
 
 sub pointcut {
 	$_[0]->{pointcut};
+}
+
+=pod
+
+=head2 original
+
+  $_->original->( 1, 2, 3 );
+
+In a pointcut, the C<original> method returns a C<CODE> reference to the
+original function before it was hooked by the L<Aspect> weaving process.
+
+Calls made to the function are unprotected, parameters and calling context will
+not be replicated into the function, return params and exception will not be
+caught.
+
+=cut
+
+sub original {
+	$_[0]->{original};
 }
 
 =pod
@@ -223,12 +251,9 @@ sub short_name {
 	return $1;
 }
 
-# Back compatibility
-BEGIN {
-	*short_sub_name = *short_name;
-}
-
 =pod
+
+=head2 args
 
   # Add a parameter to the function call
   $_->args( $_->args, 'more' );
@@ -281,13 +306,13 @@ sub args {
 
 =head2 self
 
-  after_returning {
+  after {
       $_->self->save;
   } My::Foo::set;
 
 The C<self> method is a convenience provided for when you are writing advice
-that will be working with object-oriented Perl code. It returns the first the
-first parameter to the method (which should be object), which you can then call
+that will be working with object-oriented Perl code. It returns the first
+parameter to the method (which should be object), which you can then call
 methods on.
 
 The result is advice code that is much more natural to read, as you can see in
@@ -341,6 +366,92 @@ C<wantarray> method.
 sub wantarray {
 	$_[0]->{wantarray};
 }
+
+=pod
+
+=head2 exception
+
+  unless ( $_->exception ) {
+      $_->exception('Kaboom');
+  }
+
+The C<exception> method is used to get the current die message or exception
+object, or to set the die message or exception object.
+
+=cut
+
+sub exception {
+	return $_[0]->{exception} if defined CORE::wantarray();
+	$_[0]->{exception} = $_[1];
+}
+
+sub enclosing {
+	$_[0]->{enclosing};
+}
+
+sub topic {
+	Carp::croak("The join point method topic in reserved");
+}
+
+sub AUTOLOAD {
+	my $self = shift;
+	my $key  = our $AUTOLOAD;
+	$key =~ s/^.*:://;
+	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
+	return $self->{$key};
+}
+
+# Improves performance by not having to send DESTROY calls
+# through AUTOLOAD, and not having to check for DESTROY in AUTOLOAD.
+sub DESTROY () { }
+
+
+
+
+
+#######################################################################
+# Back Compatibility
+
+sub params_ref {
+	$_[0]->{args};
+}
+
+sub params {
+	$_[0]->{args} = [ @_[1..$#_] ] if @_ > 1;
+	return CORE::wantarray
+		? @{$_[0]->{args}}
+		: $_[0]->{args};
+}
+
+BEGIN {
+	*short_sub_name = *short_name;
+}
+
+
+
+
+
+######################################################################
+# Optional XS Acceleration
+
+BEGIN {
+	local $@;
+	eval <<'END_PERL';
+use Class::XSAccessor 1.08 {
+	replace => 1,
+	getters => {
+		'pointcut'   => 'pointcut',
+		'original'   => 'original',
+		'sub_name'   => 'sub_name',
+		'wantarray'  => 'wantarray',
+		'enclosing'  => 'enclosing',
+		'params_ref' => 'args',
+	},
+};
+END_PERL
+}
+
+1;
 
 =pod
 
@@ -401,97 +512,6 @@ However, in Perl the context of the current function is inherited by a function
 called with return in the manner shown above. Thus the usage of C<return_value>
 in this way alone is guarenteed to also set the return value rather than fetch
 it.
-
-=cut
-
-sub return_value {
-	my $self = shift;
-
-	# Handle usage in getter form
-	if ( defined CORE::wantarray() ) {
-		# Let the inherent magic of Perl do the work between the
-		# list and scalar context calls to return_value
-		if ( $self->{wantarray} ) {
-			return @{$self->{return_value}};
-		} elsif ( defined $self->{wantarray} ) {
-			return $self->{return_value};
-		} else {
-			return;
-		}
-	}
-
-	# Having provided a return value, suppress any exceptions
-	# and don't proceed if applicable.
-	$self->{exception} = '';
-	$self->{proceed}   = 0;
-	if ( $self->{wantarray} ) {
-		@{$self->{return_value}} = @_;
-	} elsif ( defined $self->{wantarray} ) {
-		$self->{return_value} = pop;
-	}
-}
-
-# Accelerate the recommended cflow key
-sub enclosing {
-	$_[0]->{enclosing};
-}
-
-sub AUTOLOAD {
-	my $self = shift;
-	my $key  = our $AUTOLOAD;
-	$key =~ s/^.*:://;
-	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
-	return $self->{$key};
-}
-
-# Improves performance by not having to send DESTROY calls
-# through AUTOLOAD, and not having to check for DESTROY in AUTOLOAD.
-sub DESTROY () { }
-
-
-
-
-
-#######################################################################
-# Back Compatibility
-
-sub params_ref {
-	$_[0]->{args};
-}
-
-sub params {
-	$_[0]->{args} = [ @_[1..$#_] ] if @_ > 1;
-	return CORE::wantarray
-		? @{$_[0]->{args}}
-		: $_[0]->{args};
-}
-
-
-
-
-
-######################################################################
-# Optional XS Acceleration
-
-BEGIN {
-	local $@;
-	eval <<'END_PERL';
-use Class::XSAccessor 1.08 {
-	replace => 1,
-	getters => {
-		'pointcut'   => 'pointcut',
-		'sub_name'   => 'sub_name',
-		'wantarray'  => 'wantarray',
-		'params_ref' => 'args',
-		'enclosing'  => 'enclosing',
-	},
-};
-END_PERL
-}
-
-1;
-
-=pod
 
 =head1 AUTHORS
 

@@ -8,7 +8,7 @@ use Aspect::Pointcut            ();
 use Aspect::Pointcut::Not       ();
 use Aspect::Pointcut::Returning ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Pointcut';
 
 
@@ -26,7 +26,7 @@ sub new {
 	unless ( defined $spec ) {
 		return bless [
 			$spec,
-			"\$_->{exception}",
+			'$Aspect::POINT->{exception}',
 		], $class;
 	}
 
@@ -34,7 +34,7 @@ sub new {
 	if ( Params::Util::_STRING($spec) ) {
 		return bless [
 			$spec,
-			"Params::Util::_INSTANCE(\$_->{exception}, '$spec')",
+			"Params::Util::_INSTANCE(\$Aspect::POINT->{exception}, '$spec')",
 		], $class;
 	}
 
@@ -44,7 +44,7 @@ sub new {
 		$regex =~ s|^/\(\?([xism]*)-[xism]*:(.*)\)/\z|/$2/$1|s;
 		return bless [
 			$spec,
-			"defined \$_->{exception} and not ref \$_->{exception} and \$_->{exception} =~ $regex",
+			"defined \$Aspect::POINT->{exception} and not ref \$Aspect::POINT->{exception} and \$Aspect::POINT->{exception} =~ $regex",
 		], $class;
 	}
 
@@ -112,8 +112,8 @@ Aspect::Pointcut::Throwing - Exception typing pointcut
 =head1 DESCRIPTION
 
 The B<Aspect::Pointcut::Throwing> pointcut is used to match situations
-in which an after() or after_throwing() advice block wishes to intercept
-the throwing of a specific exception string or object.
+in which an after() advice block wishes to intercept the throwing of a specific
+exception string or object.
 
 =head1 AUTHORS
 

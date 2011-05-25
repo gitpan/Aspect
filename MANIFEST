@@ -71,6 +71,7 @@ t/26_advice_after_throwing.t
 t/30_return_value.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
+t/33_feature_topic.t
 t/listenable.t
 t/rt_57417.t
 t/singleton.t

@@ -8,7 +8,7 @@ use Aspect::Pointcut       ();
 use Aspect::Pointcut::Call ();
 use Aspect::Point::Static  ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant KEY  => 0;
@@ -72,12 +72,12 @@ sub compile_runtime {
 			last;
 		}
 		return 0 unless $caller;
-		my $context = bless {
+		my $static = bless {
 			sub_name => $caller->{sub_name},
-			pointcut => $_->{pointcut},
+			pointcut => $Aspect::POINT->{pointcut},
 			args     => $caller->{args},
 		}, 'Aspect::Point::Static';
-		$_->{$self->[KEY]} = $context;
+		$Aspect::POINT->{$self->[KEY]} = $static;
 		return 1;
 	};
 }

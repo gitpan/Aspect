@@ -92,9 +92,7 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
   
   # Define debugger breakpoints with high precision and conditionality
   aspect Breakpoint => call qr/^Foo::.+::Bar::when_/ & wantscalar & highest;
-  
-  
-  
+
 =head1 DESCRIPTION
 
 =head2 What is Aspect-Oriented Programming?
@@ -423,7 +421,7 @@ use Aspect::Point::After        ();
 use Aspect::Point::Around       ();
 use Aspect::Point::Before       ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
@@ -651,9 +649,9 @@ sub highest () {
   my $string = throwing qr/does not exist/;
   my $object = throwing 'Exception::Class';
 
-The C<throwing> pointcut is used with the C<after> (and C<after_throwing>) to
-restrict the pointcut so advice code is only fired for a specific die message
-or a particular exception class (or subclass).
+The C<throwing> pointcut is used with the C<after> to restrict the pointcut so
+advice code is only fired for a specific die message or a particular exception
+class (or subclass).
 
 The C<throwing> declarator takes a single parameter which is the pointcut spec,
 and can be provided in two different forms.
@@ -809,11 +807,6 @@ The C<after> declarator is used to create advice in which the advice code will
 be run after the join point has run, regardless of whether the function return
 correctly or throws an exception.
 
-This advice should be used when you need to deal flexibly with return values,
-but might also want to handle exceptions. Use of this advice is relatively
-rare, as most of the time you want something more flexible like C<around>, 
-or something more specific like C<after_returning> or C<after_throwing>.
-
 For more information, see L<Aspect::Advice::After>.
 
 =cut
@@ -857,7 +850,6 @@ sub after_throwing (&$) {
       my @start   = Time::HiRes::gettimeofday();
       $_->proceed;
       my @stop    = Time::HiRes::gettimeofday();
-  
       my $elapsed = Time::HiRes::tv_interval( \@start, \@stop );
       print "My::foo executed in $elapsed seconds\n";
   } call 'My::foo';
@@ -1032,9 +1024,9 @@ sub _LIBRARY {
 
 =pod
 
-=head1 OPERATORS
+=head1 POINTCUT OPERATORS
 
-=head2 Pointcut &
+=head2 &
 
 Overloading of bitwise C<&> for pointcut declarations allows a natural looking
 boolean "and" logic for pointcuts. When using the C<&> operator the combined
@@ -1049,7 +1041,7 @@ unordered implementation.
 
 For more information, see L<Aspect::Pointcut::And>.
 
-=head2 Pointcut |
+=head2 |
 
 Overloading of bitwise C<|> for pointcut declarations allows a natural looking
 boolean "or" logic for pointcuts. When using the C<|> operator the combined
@@ -1067,7 +1059,7 @@ order while using order to optimise where you can.
 
 For more information, see L<Aspect::Pointcut::Or>.
 
-=head2 Pointcut !
+=head2 !
 
 Overload of negation C<!> for pointcut declarations allows a natural looking
 boolean "not" logic for pointcuts. When using the C<!> operator the resulting
@@ -1075,21 +1067,140 @@ pointcut expression will match if the single subexpression does B<not> match.
 
 For more information, see L<Aspect::Pointcut::Not>.
 
-=head1 ADVICE CONTEXT METHODS
+=head1 ADVICE METHODS
 
-The following methods are available in the advice code for one or more advice
-types. Different sets of methods are available for the different advice types.
+A range of different methods are available within each type of advice code.
 
-The actual objects involved are those within the L<Aspect::Point> tree.
+The are summarised below, and described in more detail in L<Aspect::Point>.
 
 =head2 type
 
-The C<type> method is a convenience provided in the situation something has a
-L<Aspect::Point> method and wants to know the advice declarator it is made for.
+The C<type> method is a convenience provided in the situation advice code is
+used in more than one type of advice, and wants to know the advice declarator
+is was made form.
 
-Returns C<"before"> for L<Aspect::Advice::Before> advice, C<"after"> for
-L<Aspect::Advice::After> advice, or C<"around"> for
-L<Aspect::Advice::Around> advice.
+Returns C<"before">, C<"after"> or C<"around">.
+
+=head2 pointcut
+
+  my $pointcut = $_->pointcut;
+
+The C<pointcut> method provides access to the original join point specification
+(as a tree of L<Aspect::Pointcut> objects) that the current join point matched
+against.
+
+=head2 original
+
+  $_->original->( 1, 2, 3 );
+
+In a pointcut, the C<original> method returns a C<CODE> reference to the
+original function before it was hooked by the L<Aspect> weaving process.
+
+  # Prints "Full::Function::name"
+  before {
+      print $_->sub_name . "\n";
+  } call 'Full::Function::name';
+
+The C<sub_name> method returns a string with the full resolved function name
+at the join point the advice code is running at.
+
+=head2 package_name
+
+  # Prints "Just::Package"
+  before {
+      print $_->package_name . "\n";
+  } call 'Just::Package::name';
+
+The C<package_name> parameter is a convenience wrapper around the C<sub_name>
+method. Where C<sub_name> will return the fully resolved function name, the
+C<package_name> method will return just the namespace of the package of the
+join point.
+
+=head2 short_name
+
+  # Prints "name"
+  before {
+      print $_->short_name . "\n";
+  } call 'Just::Package::name';
+
+The C<short_name> parameter is a convenience wrapper around the C<sub_name>
+method. Where C<sub_name> will return the fully resolved function name, the
+C<short_name> method will return just the name of the function.
+
+=head2 args
+
+  # Get the parameters as a list
+  my @list = $_->args;
+  
+  # Set the parameters
+  $_->args( 1, 2, 3 );
+  
+  # Append a parameter
+  $_->args( $_->args, 'more' );
+
+The C<args> method allows you to get or set the list of parameters to a
+function. It is the method equivalent of manipulating the C<@_> array.
+
+=head2 self
+
+  after {
+      $_->self->save;
+  } My::Foo::set;
+
+The C<self> method is a convenience provided for when you are writing advice
+that will be working with object-oriented Perl code. It returns the first
+parameter to the method (which should be object), which you can then call
+methods on.
+
+=head2 wantarray
+
+  # Return differently depending on the calling context
+  if ( $_->wantarray ) {
+      $_->return_value(5);
+  } else {
+      $_->return_value(1, 2, 3, 4, 5);
+  }
+
+The C<wantarray> method returns the L<perlfunc/wantarray> context of the
+call to the function for the current join point.
+
+As with the core Perl C<wantarray> function, returns true if the function is
+being called in list context, false if the function is being called in scalar
+context, or C<undef> if the function is being called in void context.
+
+=head2 exception
+
+  unless ( $_->exception ) {
+      $_->exception('Kaboom');
+  }
+
+The C<exception> method is used to get the current die message or exception
+object, or to set the die message or exception object.
+
+=head2 return_value
+
+  # Add an extra value to the returned list
+  $_->return_value( $_->return_value, 'thing' );
+  
+  # Return null (equivalent to "return;")
+  $_->return_value;
+
+The C<return_value> method is used to get or set the return value for the
+join point function, in a similar way to the normal Perl C<return> keyword.
+
+=head2 proceed
+
+  around {
+      my $before = time;
+      $_->proceed;
+      my $elapsed = time - $before;
+      print "Call to " . $_->sub_name . " took $elapsed seconds\n";
+  } call 'My::function';
+
+Available only in C<around> advice, the C<proceed> method is used to run the
+join point function with the current join point context (parameters, scalar vs
+list call, etc) and store the result of the original call in the join point
+context (return values, exceptions etc).
 
 =head1 LIBRARY
 

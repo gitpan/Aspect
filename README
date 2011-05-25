@@ -540,9 +540,9 @@ FUNCTIONS
       my $string = throwing qr/does not exist/;
       my $object = throwing 'Exception::Class';
 
-    The "throwing" pointcut is used with the "after" (and "after_throwing")
-    to restrict the pointcut so advice code is only fired for a specific die
-    message or a particular exception class (or subclass).
+    The "throwing" pointcut is used with the "after" to restrict the
+    pointcut so advice code is only fired for a specific die message or a
+    particular exception class (or subclass).
 
     The "throwing" declarator takes a single parameter which is the pointcut
     spec, and can be provided in two different forms.
@@ -662,12 +662,6 @@ FUNCTIONS
     will be run after the join point has run, regardless of whether the
     function return correctly or throws an exception.
 
-    This advice should be used when you need to deal flexibly with return
-    values, but might also want to handle exceptions. Use of this advice is
-    relatively rare, as most of the time you want something more flexible
-    like "around", or something more specific like "after_returning" or
-    "after_throwing".
-
     For more information, see Aspect::Advice::After.
 
   around
@@ -676,8 +670,7 @@ FUNCTIONS
           my @start   = Time::HiRes::gettimeofday();
           $_->proceed;
           my @stop    = Time::HiRes::gettimeofday();
-      
-      my $elapsed = Time::HiRes::tv_interval( \@start, \@stop );
+          my $elapsed = Time::HiRes::tv_interval( \@start, \@stop );
           print "My::foo executed in $elapsed seconds\n";
       } call 'My::foo';
 
@@ -752,8 +745,8 @@ FUNCTIONS
 
     For more information on writing reusable aspects, see Aspect::Library.
 
-OPERATORS
-  Pointcut &
+POINTCUT OPERATORS
+  &
     Overloading of bitwise "&" for pointcut declarations allows a natural
     looking boolean "and" logic for pointcuts. When using the "&" operator
     the combined pointcut expression will match if all pointcut
@@ -768,7 +761,7 @@ OPERATORS
 
     For more information, see Aspect::Pointcut::And.
 
-  Pointcut |
+  |
     Overloading of bitwise "|" for pointcut declarations allows a natural
     looking boolean "or" logic for pointcuts. When using the "|" operator
     the combined pointcut expression will match if either pointcut
@@ -786,7 +779,7 @@ OPERATORS
 
     For more information, see Aspect::Pointcut::Or.
 
-  Pointcut !
+  !
     Overload of negation "!" for pointcut declarations allows a natural
     looking boolean "not" logic for pointcuts. When using the "!" operator
     the resulting pointcut expression will match if the single subexpression
@@ -794,21 +787,132 @@ OPERATORS
 
     For more information, see Aspect::Pointcut::Not.
 
-ADVICE CONTEXT METHODS
-    The following methods are available in the advice code for one or more
-    advice types. Different sets of methods are available for the different
-    advice types.
+ADVICE METHODS
+    A range of different methods are available within each type of advice
+    code.
 
-    The actual objects involved are those within the Aspect::Point tree.
+    The are summarised below, and described in more detail in Aspect::Point.
 
   type
-    The "type" method is a convenience provided in the situation something
-    has a Aspect::Point method and wants to know the advice declarator it is
-    made for.
+    The "type" method is a convenience provided in the situation advice code
+    is used in more than one type of advice, and wants to know the advice
+    declarator is was made form.
 
-    Returns "before" for Aspect::Advice::Before advice, "after" for
-    Aspect::Advice::After advice, or "around" for Aspect::Advice::Around
-    advice.
+    Returns "before", "after" or "around".
+
+  pointcut
+      my $pointcut = $_->pointcut;
+
+    The "pointcut" method provides access to the original join point
+    specification (as a tree of Aspect::Pointcut objects) that the current
+    join point matched against.
+
+  original
+      $_->original->( 1, 2, 3 );
+
+    In a pointcut, the "original" method returns a "CODE" reference to the
+    original function before it was hooked by the Aspect weaving process.
+
+      # Prints "Full::Function::name"
+      before {
+          print $_->sub_name . "\n";
+      } call 'Full::Function::name';
+
+    The "sub_name" method returns a string with the full resolved function
+    name at the join point the advice code is running at.
+
+  package_name
+      # Prints "Just::Package"
+      before {
+          print $_->package_name . "\n";
+      } call 'Just::Package::name';
+
+    The "package_name" parameter is a convenience wrapper around the
+    "sub_name" method. Where "sub_name" will return the fully resolved
+    function name, the "package_name" method will return just the namespace
+    of the package of the join point.
+
+  short_name
+      # Prints "name"
+      before {
+          print $_->short_name . "\n";
+      } call 'Just::Package::name';
+
+    The "short_name" parameter is a convenience wrapper around the
+    "sub_name" method. Where "sub_name" will return the fully resolved
+    function name, the "short_name" method will return just the name of the
+    function.
+
+  args
+      # Get the parameters as a list
+      my @list = $_->args;
+      
+  # Set the parameters
+      $_->args( 1, 2, 3 );
+      
+  # Append a parameter
+      $_->args( $_->args, 'more' );
+
+    The "args" method allows you to get or set the list of parameters to a
+    function. It is the method equivalent of manipulating the @_ array.
+
+  self
+      after {
+          $_->self->save;
+      } My::Foo::set;
+
+    The "self" method is a convenience provided for when you are writing
+    advice that will be working with object-oriented Perl code. It returns
+    the first parameter to the method (which should be object), which you
+    can then call methods on.
+
+  wantarray
+      # Return differently depending on the calling context
+      if ( $_->wantarray ) {
+          $_->return_value(5);
+      } else {
+          $_->return_value(1, 2, 3, 4, 5);
+      }
+
+    The "wantarray" method returns the "wantarray" in perlfunc context of
+    the call to the function for the current join point.
+
+    As with the core Perl "wantarray" function, returns true if the function
+    is being called in list context, false if the function is being called
+    in scalar context, or "undef" if the function is being called in void
+    context.
+
+  exception
+      unless ( $_->exception ) {
+          $_->exception('Kaboom');
+      }
+
+    The "exception" method is used to get the current die message or
+    exception object, or to set the die message or exception object.
+
+  return_value
+      # Add an extra value to the returned list
+      $_->return_value( $_->return_value, 'thing' );
+      
+  # Return null (equivalent to "return;")
+      $_->return_value;
+
+    The "return_value" method is used to get or set the return value for the
+    join point function, in a similar way to the normal Perl "return"
+    keyword.
+
+  proceed
+      around {
+          my $before = time;
+          $_->proceed;
+          my $elapsed = time - $before;
+          print "Call to " . $_->sub_name . " took $elapsed seconds\n";
+      } call 'My::function';
+
+    Available only in "around" advice, the "proceed" method is used to run
+    the join point function with the current join point context (parameters,
+    scalar vs list call, etc) and store the result of the original call in
+    the join point context (return values, exceptions etc).
 
 LIBRARY
     The main Aspect distribution ships with the following set of libraries.

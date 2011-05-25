@@ -11,7 +11,7 @@ use Aspect::Hook          ();
 use Aspect::Advice        ();
 use Aspect::Point::Before ();
 
-our $VERSION = '0.98';
+our $VERSION = '0.981';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -67,7 +67,7 @@ sub _install {
 
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
-			local \$_ = bless {
+			local \$Aspect::POINT = bless {
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				args         => \\\@_,
@@ -77,6 +77,7 @@ sub _install {
 				proceed      => 1,
 			}, 'Aspect::Point::Before';
 
+			local \$_ = \$Aspect::POINT;
 			goto &\$original unless $MATCH_RUN;
 
 			# Array context needs some special return handling
