@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Aspect::Library ();
 
-our $VERSION = '0.981';
+our $VERSION = '0.983';
 our @ISA     = 'Aspect::Library';
 
 sub new {
@@ -42,17 +42,6 @@ sub lexical {
 sub get_advice {
 	my $class = ref $_[0] || $_[0];
 	die("Method 'get_advice' is not implemented by class '$class'");
-}
-
-
-
-
-
-######################################################################
-# Back Compatibility
-
-BEGIN {
-	*params = *args;
 }
 
 

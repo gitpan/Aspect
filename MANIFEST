@@ -22,6 +22,7 @@ lib/Aspect/Advice/Around.pm
 lib/Aspect/Advice/Before.pm
 lib/Aspect/Guard.pm
 lib/Aspect/Hook.pm
+lib/Aspect/Legacy.pm
 lib/Aspect/Library.pm
 lib/Aspect/Library/Breakpoint.pm
 lib/Aspect/Library/Listenable.pm
@@ -30,9 +31,6 @@ lib/Aspect/Library/Singleton.pm
 lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
 lib/Aspect/Point.pm
-lib/Aspect/Point/After.pm
-lib/Aspect/Point/Around.pm
-lib/Aspect/Point/Before.pm
 lib/Aspect/Point/Static.pm
 lib/Aspect/Pointcut.pm
 lib/Aspect/Pointcut/And.pm
@@ -66,12 +64,14 @@ t/21_advice_around.t
 t/22_advice_around.t
 t/23_advice_before.t
 t/24_advice_after.t
-t/25_advice_after_returning.t
-t/26_advice_after_throwing.t
 t/30_return_value.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
 t/33_feature_topic.t
+t/50_legacy.t
+t/51_legacy_wantarray.t
+t/60_legacy_after_returning.t
+t/61_legacy_after_throwing.t
 t/listenable.t
 t/rt_57417.t
 t/singleton.t

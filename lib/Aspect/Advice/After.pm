@@ -5,14 +5,14 @@ use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
-use Carp::Heavy          (); 
-use Carp                 ();
-use Sub::Uplevel         ();
-use Aspect::Hook         ();
-use Aspect::Advice       ();
-use Aspect::Point::After ();
+use Carp::Heavy    (); 
+use Carp           ();
+use Sub::Uplevel   ();
+use Aspect::Hook   ();
+use Aspect::Advice ();
+use Aspect::Point  ();
 
-our $VERSION = '0.981';
+our $VERSION = '0.983';
 our @ISA     = 'Aspect::Advice';
 
 # NOTE: To simplify debugging of the generated code, all injected string
@@ -78,14 +78,15 @@ sub _install {
 				] };
 
 				local \$Aspect::POINT = bless {
+					type         => 'after',
+					pointcut     => \$pointcut,
+					original     => \$original,
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					args         => \\\@_,
 					return_value => \$return,
 					exception    => \$\@,
-					pointcut     => \$pointcut,
-					original     => \$original,
-				}, 'Aspect::Point::After';
+				}, 'Aspect::Point';
 
 				unless ( $MATCH_RUN ) {
 					return \@\$return unless \$Aspect::POINT->{exception};
@@ -112,14 +113,15 @@ sub _install {
 				};
 
 				local \$Aspect::POINT = bless {
+					type         => 'after',
+					pointcut     => \$pointcut,
+					original     => \$original,
 					sub_name     => \$name,
 					wantarray    => \$wantarray,
 					args         => \\\@_,
 					return_value => \$return,
 					exception    => \$\@,
-					pointcut     => \$pointcut,
-					original     => \$original,
-				}, 'Aspect::Point::After';
+				}, 'Aspect::Point';
 
 				unless ( $MATCH_RUN ) {
 					return \$return unless \$Aspect::POINT->{exception};
@@ -146,14 +148,15 @@ sub _install {
 			};
 
 			local \$Aspect::POINT = bless {
+				type         => 'after',
+				pointcut     => \$pointcut,
+				original     => \$original,
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				args         => \\\@_,
 				return_value => undef,
 				exception    => \$\@,
-				pointcut     => \$pointcut,
-				original     => \$original,
-			}, 'Aspect::Point::After';
+			}, 'Aspect::Point';
 
 			unless ( $MATCH_RUN ) {
 				return unless \$Aspect::POINT->{exception};

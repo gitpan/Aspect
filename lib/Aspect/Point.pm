@@ -115,6 +115,30 @@ that eventually reached the get/set on C<Person>:
 
 =head1 METHODS
 
+=cut
+
+use strict;
+use warnings;
+use Carp                  ();
+use Sub::Uplevel          ();
+use Aspect::Point::Static ();
+
+our $VERSION = '0.983';
+
+
+
+
+
+######################################################################
+# Aspect::Point Methods
+
+# sub new {
+	# my $class = shift;
+	# bless { @_ }, $class;
+# }
+
+=pod
+
 =head2 type
 
 The C<type> method is a convenience provided in the situation something has a
@@ -126,25 +150,9 @@ L<Aspect::Advice::Around> advice.
 
 =cut
 
-use strict;
-use warnings;
-use Carp                  ();
-use Sub::Uplevel          ();
-use Aspect::Point::Static ();
-
-our $VERSION = '0.981';
-
-
-
-
-
-######################################################################
-# Constructor and Built-In Accessors
-
-# sub new {
-	# my $class = shift;
-	# bless { @_ }, $class;
-# }
+sub type {
+	$_[0]->{type};
+}
 
 =pod
 
@@ -381,77 +389,12 @@ object, or to set the die message or exception object.
 =cut
 
 sub exception {
+	unless ( $_[0]->{type} eq 'after' ) {
+		Carp::croak("Cannot call exception in $_[0]->{exception} advice");
+	}
 	return $_[0]->{exception} if defined CORE::wantarray();
 	$_[0]->{exception} = $_[1];
 }
-
-sub enclosing {
-	$_[0]->{enclosing};
-}
-
-sub topic {
-	Carp::croak("The join point method topic in reserved");
-}
-
-sub AUTOLOAD {
-	my $self = shift;
-	my $key  = our $AUTOLOAD;
-	$key =~ s/^.*:://;
-	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
-	return $self->{$key};
-}
-
-# Improves performance by not having to send DESTROY calls
-# through AUTOLOAD, and not having to check for DESTROY in AUTOLOAD.
-sub DESTROY () { }
-
-
-
-
-
-#######################################################################
-# Back Compatibility
-
-sub params_ref {
-	$_[0]->{args};
-}
-
-sub params {
-	$_[0]->{args} = [ @_[1..$#_] ] if @_ > 1;
-	return CORE::wantarray
-		? @{$_[0]->{args}}
-		: $_[0]->{args};
-}
-
-BEGIN {
-	*short_sub_name = *short_name;
-}
-
-
-
-
-
-######################################################################
-# Optional XS Acceleration
-
-BEGIN {
-	local $@;
-	eval <<'END_PERL';
-use Class::XSAccessor 1.08 {
-	replace => 1,
-	getters => {
-		'pointcut'   => 'pointcut',
-		'original'   => 'original',
-		'sub_name'   => 'sub_name',
-		'wantarray'  => 'wantarray',
-		'enclosing'  => 'enclosing',
-		'params_ref' => 'args',
-	},
-};
-END_PERL
-}
-
-1;
 
 =pod
 
@@ -512,6 +455,114 @@ However, in Perl the context of the current function is inherited by a function
 called with return in the manner shown above. Thus the usage of C<return_value>
 in this way alone is guarenteed to also set the return value rather than fetch
 it.
+
+=cut
+
+sub return_value {
+	my $self = shift;
+	my $want = $self->{wantarray};
+
+	# Handle usage in getter form
+	if ( defined CORE::wantarray() ) {
+		# Let the inherent magic of Perl do the work between the
+		# list and scalar context calls to return_value
+		return @{$self->{return_value} || []} if $want;
+		return $self->{return_value} if defined $want;
+		return;
+	}
+
+	# We've been provided a return value
+	$self->{exception}    = '';
+	$self->{return_value} = $want ? [ @_ ] : pop;
+}
+
+sub proceed {
+	my $self = shift;
+
+	unless ( $self->{type} eq 'around' ) {
+		Carp::croak("Cannot call proceed in $self->{type} advice");
+	}
+
+	local $_ = ${$self->{topic}};
+
+	if ( $self->{wantarray} ) {
+		$self->return_value(
+			Sub::Uplevel::uplevel(
+				2,
+				$self->{original},
+				@{$self->{args}},
+			)
+		);
+
+	} elsif ( defined $self->{wantarray} ) {
+		$self->return_value(
+			scalar Sub::Uplevel::uplevel(
+				2,
+				$self->{original},
+				@{$self->{args}},
+			)
+		);
+
+	} else {
+		Sub::Uplevel::uplevel(
+			2,
+			$self->{original},
+			@{$self->{args}},
+		);
+	}
+
+	${$self->{topic}} = $_;
+
+	return;
+}
+
+sub enclosing {
+	$_[0]->{enclosing};
+}
+
+sub topic {
+	Carp::croak("The join point method topic in reserved");
+}
+
+sub AUTOLOAD {
+	my $self = shift;
+	my $key  = our $AUTOLOAD;
+	$key =~ s/^.*:://;
+	Carp::croak "Key does not exist: [$key]" unless exists $self->{$key};
+	return $self->{$key};
+}
+
+# Improves performance by not having to send DESTROY calls
+# through AUTOLOAD, and not having to check for DESTROY in AUTOLOAD.
+sub DESTROY () { }
+
+
+
+
+
+######################################################################
+# Optional XS Acceleration
+
+BEGIN {
+	local $@;
+	eval <<'END_PERL';
+use Class::XSAccessor 1.08 {
+	replace => 1,
+	getters => {
+		'type'       => 'type',
+		'pointcut'   => 'pointcut',
+		'original'   => 'original',
+		'sub_name'   => 'sub_name',
+		'wantarray'  => 'wantarray',
+		'enclosing'  => 'enclosing',
+	},
+};
+END_PERL
+}
+
+1;
+
+=pod
 
 =head1 AUTHORS
 

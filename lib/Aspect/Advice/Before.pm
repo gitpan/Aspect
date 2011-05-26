@@ -5,13 +5,13 @@ use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
-use Carp::Heavy           (); 
-use Carp                  ();
-use Aspect::Hook          ();
-use Aspect::Advice        ();
-use Aspect::Point::Before ();
+use Carp::Heavy    (); 
+use Carp           ();
+use Aspect::Hook   ();
+use Aspect::Advice ();
+use Aspect::Point  ();
 
-our $VERSION = '0.981';
+our $VERSION = '0.983';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -68,39 +68,28 @@ sub _install {
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
 			local \$Aspect::POINT = bless {
-				sub_name     => \$name,
-				wantarray    => \$wantarray,
-				args         => \\\@_,
-				pointcut     => \$pointcut,
-				return_value => \$wantarray ? [ ] : undef,
-				original     => \$original,
-				proceed      => 1,
-			}, 'Aspect::Point::Before';
+				type      => 'before',
+				pointcut  => \$pointcut,
+				original  => \$original,
+				sub_name  => \$name,
+				wantarray => \$wantarray,
+				args      => \\\@_,
+				exception => \$\@, ### Not used (yet)
+			}, 'Aspect::Point';
 
 			local \$_ = \$Aspect::POINT;
 			goto &\$original unless $MATCH_RUN;
 
-			# Array context needs some special return handling
-			if ( \$wantarray ) {
-				# Run the advice code
-				&\$code(\$_);
-
-				if ( \$_->{proceed} ) {
-					\@_ = \$_->args; ### Superfluous?
-					goto &\$original;
-				}
-
-				# Don't run the original
-				return \@{\$_->{return_value}};
-			}
-
-			# Scalar and void have the same return handling.
+			# Run the advice code
 			&\$code(\$_);
 
-			# Do they want to shortcut?
-			return \$_->{return_value} unless \$_->{proceed};
+			# Shortcut if they set a return value
+			if ( exists \$_->{return_value} ) {
+				return \@{\$_->{return_value}} if \$wantarray;
+				return \$_->{return_value};
+			}
 
-			# Continue onwards to the original function
+			# Proceed to the original function
 			\@_ = \$_->args; ### Superfluous?
 			goto &\$original;
 		};

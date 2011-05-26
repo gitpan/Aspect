@@ -1,5 +1,17 @@
 Revision history for Perl extension Aspect
 
+0.983 Thu 26 May 2011
+	- Added a convenience wrapper over Sub::Install
+	- Rewrote the initial introduction by drawing language from Wikipedia.
+	- Moved all legacy code into a dedicated legacy module
+	- Split out tests for deprecated features into their own test scripts
+
+0.982 Wed 25 May 2011
+	- Refactored away the ->{proceed} flag on before join point objects.
+	- Unified return_value across all advice types, and optimised further.
+	- Completing the POD documentation for the Aspect::Point:: modules
+	- Folded down Aspect::Point::Before/After/Around into a single class
+
 0.981 Wed 25 May 2011
 	- Removed the proceed method from the begin advice, you now only signal
 	  to not continue with either exception or return_value.

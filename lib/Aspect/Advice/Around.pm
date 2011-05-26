@@ -5,14 +5,14 @@ use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed? --ADAMK
-use Carp::Heavy           (); 
-use Carp                  ();
-use Sub::Uplevel          ();
-use Aspect::Hook          ();
-use Aspect::Advice        ();
-use Aspect::Point::Around ();
+use Carp::Heavy    (); 
+use Carp           ();
+use Sub::Uplevel   ();
+use Aspect::Hook   ();
+use Aspect::Advice ();
+use Aspect::Point  ();
 
-our $VERSION = '0.981';
+our $VERSION = '0.983';
 our @ISA     = 'Aspect::Advice';
 
 sub _install {
@@ -69,14 +69,15 @@ sub _install {
 			# Apply any runtime-specific context checks
 			my \$wantarray = wantarray;
 			local \$Aspect::POINT = bless {
+				type         => 'around',
+				pointcut     => \$pointcut,
+				original     => \$original,
 				sub_name     => \$name,
 				wantarray    => \$wantarray,
 				args         => \\\@_,
 				return_value => \$wantarray ? [ ] : undef,
-				pointcut     => \$pointcut,
-				original     => \$original,
 				topic        => \\\$_,
-			}, 'Aspect::Point::Around';
+			}, 'Aspect::Point';
 
 			# Can we shortcut the advice code
 			goto &\$original unless $MATCH_RUN;

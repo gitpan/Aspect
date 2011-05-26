@@ -10,14 +10,10 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
 
   use Aspect;
   
-  
-  
   # Run some code "Advice" before a particular function
   before {
       print "About to call create\n";
   } call 'Person::create';
-  
-  
   
   # Run Advice after several methods and hijack their return values
   after {
@@ -25,16 +21,12 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
       $_->return_value(undef);
   } call qr/^Person::[gs]et_/;
   
-  
-  
   # Run Advice conditionally based on multiple factors
   before {
       print "Calling a get method in void context within Tester::run_tests";
   } wantvoid
   & ( call qr/^Person::get_/ & ! call 'Person::get_not_trapped' )
   & cflow 'Tester::run_tests';
-  
-  
   
   # Context-aware runtime hijacking of a method if certain condition is true
   around {
@@ -48,8 +40,6 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
       }
   } call 'Bank::Account::balance';
   
-  
-  
   # Catch and handle unexpected exceptions in a function into a formal object
   after {
       $_->exception(
@@ -59,8 +49,6 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
   & ! throwing('Exception::Expected')
   & ! throwing('Exception::Unexpected');
   
-  
-  
   # Run Advice only on the outmost of a recursive series of calls
   around {
     print "Starting recursive child search\n";
@@ -68,27 +56,17 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
     print "Finished recursive child search\n";
   } call 'Person::find_child' & highest;
   
-  
-  
   # Run Advice only during the current lexical scope
   SCOPE: {
       my $hook = before {
           print "About to call create\n";
       } call 'Person::create';
-  
-      # Advice will run for this call
-      Person->create('Bob');
+      Person->create('Bob'); # Advice will run
   }
-  
-  # Advice won't run for this call
-  Person->create('Tom');
-  
-  
+  Person->create('Tom'); # Advice won't run
   
   # Use a pre-packaged collection "Aspect" of Advice rules to change a class
   aspect Singleton => 'Foo::new';
-  
-  
   
   # Define debugger breakpoints with high precision and conditionality
   aspect Breakpoint => call qr/^Foo::.+::Bar::when_/ & wantscalar & highest;
@@ -97,63 +75,91 @@ Aspect - Aspect-Oriented Programming (AOP) for Perl
 
 =head2 What is Aspect-Oriented Programming?
 
-Aspect-Oriented Programming (AOP) allows you to modularise concerns that
-would otherwise cut across many parts of a program and be problematic to
-implement and maintain.
+Aspect-Oriented Programming (AOP) is a programming paradigm which aims to
+increase modularity by allowing the separation of "cross-cutting "concerns.
 
-One common example is logging, where many small fragments code are typically
-spread throughout your entire codebase.
+It includes programming methods and tools that support the modularization of
+concerns at the level of the source code, while "aspect-oriented software
+development" refers to a whole engineering discipline.
 
-Another example is the implementation of design patterns, which combine or
-manipulate various kinds of classes in particular ways produce a known type of
-higher order behavior.
+Aspect-Oriented Programming (AOP) allows you to modularise code for issues that
+would otherwise be spread across many parts of a program and be problematic to
+both implement and maintain.
+
+Logging exemplifies a crosscutting concern because a logging strategy
+necessarily affects every logged part of the system. Logging thereby "crosscuts"
+all logged classes and methods.
+
+Typically, an aspect is scattered or tangled as code, making it harder to
+understand and maintain. It is scattered by virtue of the function (such as
+logging) being spread over a number of unrelated functions that might use its
+function, possibly in entirely unrelated systems
+
+That means to change logging can require modifying all affected modules. Aspects
+become tangled not only with the mainline function of the systems in which they
+are expressed but also with each other. That means changing one concern entails
+understanding all the tangled concerns or having some means by which the effect
+of changes can be inferred.
 
 Because Aspect-Oritented Programming moves this scattered code into a single
-place, another major benefit is conditional compilation.
+module which is loaded as a single unit, another major benefit of this method
+is conditional compilation.
 
-Features implemented via Aspects can be compiled in only in certain situations,
-and because of this Aspects are useful when debugging or testing large complex
-programs.
+Features implemented via Aspects can be compiled and added to you program only
+in certain situations, and because of this Aspects are useful when debugging
+or testing large or complex programs.
 
 Aspects can implement features necesary for correctness of programs such as
-reactivity or synchronisation, and it can be used to add checking assertions
+reactivity or synchronisation, and can be used to add checking assertions
 to your or other people's modules.
 
-If necesary (although not recommended) you can also do "Monkey Patching",
-hijacking the functionality of some other module to act different when used in
-your program than when other everywhere else.
+They can cause code to emit useful side effects not considered by the original
+author of a module, without changing the original function of the module.
+
+And, if necesary (although not recommended), they can do various types of
+"Monkey Patching", hijacking the functionality of some other module in an
+unexpected (by the original author) way so that the module acts differently
+when used in your program, when those changes might otherwise be dangerous or
+if encountered by other programs.
 
 Aspects can be used to implement space or time optimisations. One popular use
-case is to add caching to a module or function that does not natively implement
-caching.
+case of AOP is to add caching to a module or function that does not natively
+implement caching itself.
 
-See L<http://www.aosd.net> for more info.
+For more details on Aspect-Oriented Programming in general,
+L<http://en.wikipedia.org/wiki/Aspect-oriented_programming> and
+L<http://www.aosd.net>.
 
 =head2 About This Implementation
 
-The Perl B<Aspect> module tries to closely follow the terminology of the
-Java AspectJ project wherever possible (L<http://eclipse.org/aspectj>).
+The Perl B<Aspect> module tries to closely follow the terminology of the basic
+Java AspectJ project wherever possible and reasonable
+(L<http://eclipse.org/aspectj>).
 
 However due to the dynamic nature of the Perl language, several C<AspectJ>
 features are useless for us: exception softening, mixin support, out-of-class
 method declarations, annotations, and others.
 
-The Perl B<Aspect> module is focused on subroutine matching and wrapping.
+Currently the Perl B<Aspect> module is focused exclusively on subroutine
+matching and wrapping.
 
 It allows you to select collections of subroutines and conditions using a
 flexible pointcut language, and modify their behavior in any way you want.
 
-In this regard it provides a similar set of functionality to L<Hook::LexWrap>,
-but with much more precision and with much more control and maintainability
-as the complexity of what you are doing increases.
+In this regard it provides a similar set of functionality to the venerable
+L<Hook::LexWrap>, but with much more precision and with much more control and
+maintainability as the complexity of the problems you are solving increases.
 
 In addition, where the Java implementation of Aspect-Oriented Programming is
-only able to integrate at compile time, the nature of Perl means that the
-B<Aspect> module can weave in aspect code at run-time, and pointcuts can take
-advantage of run-time information and Perl-specific features like closures.
+limited to concepts expressable at compile time, the more fluid nature of Perl
+means that the B<Aspect> module can weave in aspect code at run-time. Pointcuts
+in Perl can also take advantage of run-time information and Perl-specific
+features like closures to implement more sophisticated pointcuts than are
+possible in Java.
 
 This allows the Perl implementation of Aspect-Oriented Programming to be
-stateful and adaptive in a way that Java nroamlly cannot be.
+stateful and adaptive in a way that Java cannot (although the added power can
+come with a significant speed cost if not used carefully).
 
 =head2 Terminology
 
@@ -378,6 +384,37 @@ When you C<use Aspect;> you will import a family of around fifteen
 functions. These are all factories that allow you to create pointcuts,
 advice, and aspects.
 
+=head2 Back Compatibility
+
+The various APIs in B<Aspect> have changed a few times between older versions
+and the current implementation.
+
+By default, none of these changes are available in the current version of the
+B<Aspect> module. They can, however, be accessed by providing one of two flags
+when loading B<Aspect>.
+
+  # Support for pre-1.00 Aspect usage
+  use Aspect ':deprecated';
+
+The C<:deprecated> flag loads in all alternative and deprecated function and
+method names, and exports the deprecated C<after_returning>, C<after_throwing>
+advice constructors, and the deprecated C<if_true> alias for the C<true>
+pointcut.
+
+  # Support for pre-2010 Aspect usage (both usages are equivalent)
+  use Aspect ':legacy';
+  use Aspect::Legacy;
+
+The C<:legacy> flag loads in all alternative and deprecated functions as per
+the C<:deprecated> flag.
+
+Instead of exporting all available functions and pointcut declarators it exports
+C<only> the set of functions that were available in B<Aspect> 0.12.
+
+Finally, it changes the behaviour of the exported version of C<after> to add an
+implicit C<& returning> to all pointcuts, as the original implementation did not
+trap exceptions.
+
 =head1 FUNCTIONS
 
 The following functions are exported by default (and are documented as such)
@@ -417,15 +454,74 @@ use Aspect::Advice::Around      ();
 use Aspect::Advice::Before      ();
 use Aspect::Point               ();
 use Aspect::Point::Static       ();
-use Aspect::Point::After        ();
-use Aspect::Point::Around       ();
-use Aspect::Point::Before       ();
 
-our $VERSION = '0.981';
+our $VERSION = '0.983';
+our %FLAGS   = ();
 
 # Track the location of exported functions so that pointcuts
 # can avoid accidentally binding them.
 our %EXPORTED = ();
+
+sub install {
+	Sub::Install::install_sub( {
+		into => $_[1],
+		code => $_[2],
+		as   => $_[3] || $_[2],
+	} );
+	$EXPORTED{"$_[1]::$_[2]"} = 1;
+}
+
+sub import {
+	my $class = shift;
+	my $into  = caller();
+	my %flag  = ();
+
+	# Handle import params
+	while ( @_ ) {
+		my $value = shift;
+		if ( $value =~ /^:(\w+)$/ ) {
+			$flag{$1} = 1;
+		} else {
+			Carp::croak("Unknown or unsupported import param '$value'");
+		}
+	}
+
+	# Legacy API and deprecation support
+	if ( $flag{legacy} or $flag{deprecated} ) {
+		require Aspect::Legacy;
+		if ( $flag{legacy} ) {
+			return Aspect::Legacy->import;
+		}
+	}
+
+	# Install the modern API
+	$class->install( $into => $_ ) foreach qw{
+		aspect
+		before
+		after
+		around
+		call
+		cflow
+		throwing
+		returning
+		wantlist
+		wantscalar
+		wantvoid
+		highest
+		true
+	};
+
+	# Install the modern API
+	if ( $flag{deprecated} ) {
+		$class->install( $into => $_ ) foreach qw{
+			after_returning
+			after_throwing
+			if_true
+		};
+	}
+
+	return 1;
+}
 
 
 
@@ -819,28 +915,6 @@ sub after (&$) {
 	);
 }
 
-sub after_returning (&$) {
-	Aspect::Advice::After->new(
-		lexical  => defined wantarray,
-		code     => $_[0],
-		pointcut => Aspect::Pointcut::And->new(
-			Aspect::Pointcut::Returning->new,
-			$_[1],
-		),
-	);
-}
-
-sub after_throwing (&$) {
-	Aspect::Advice::After->new(
-		lexical  => defined wantarray,
-		code     => $_[0],
-		pointcut => Aspect::Pointcut::And->new(
-			Aspect::Pointcut::Throwing->new,
-			$_[1],
-		),
-	);
-}
-
 =pod
 
 =head2 around
@@ -943,63 +1017,6 @@ sub aspect {
 		lexical => defined wantarray,
 		args    => [ @_ ],
 	);
-}
-
-
-
-
-
-
-######################################################################
-# Import Logic
-
-sub import {
-	my $class  = shift;
-	my $legacy = 0;
-	my $into   = caller();
-	while ( @_ ) {
-		my $value = shift;
-		if ( $value eq ':legacy' ) {
-			$legacy = 1;
-		} else {
-			Carp::croak("Unknown or unsupported import param '$value'");
-		}
-	}
-
-	# Install unchanged legacy functions
-	foreach ( qw{ aspect before call cflow } ) {
-		Sub::Install::install_sub( {
-			code => $_,
-			into => $into,
-		} );
-		$EXPORTED{"${into}::$_"} = 1;
-	}
-
-	# Install functions that change between API versions
-	Sub::Install::install_sub( {
-		code => $legacy ? 'after_returning' : 'after',
-		as   => 'after',
-		into => $into,
-	} );
-	$EXPORTED{"${into}::after"} = 1;
-
-	unless ( $legacy ) {
-		# Install new generation API functions
-		foreach ( qw{
-			around
-			throwing returning
-			wantlist wantscalar wantvoid
-			true highest
-		} ) {
-			Sub::Install::install_sub( {
-				code => $_,
-				into => $into,
-			} );
-			$EXPORTED{"${into}::$_"} = 1;
-		}
-	}
-
-	return 1;
 }
 
 
@@ -1438,6 +1455,8 @@ L<Aspect::Library::Trace>
 Copyright 2001 by Marcel GrE<uuml>nauer
 
 Some parts copyright 2009 - 2011 Adam Kennedy.
+
+Parts of the initial introduction courtesy Wikipedia.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
