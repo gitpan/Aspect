@@ -31,6 +31,7 @@ lib/Aspect/Library/Singleton.pm
 lib/Aspect/Library/Wormhole.pm
 lib/Aspect/Modular.pm
 lib/Aspect/Point.pm
+lib/Aspect/Point/Functions.pm
 lib/Aspect/Point/Static.pm
 lib/Aspect/Pointcut.pm
 lib/Aspect/Pointcut/And.pm
@@ -68,14 +69,15 @@ t/30_return_value.t
 t/31_feature_caller.t
 t/32_feature_wantarray.t
 t/33_feature_topic.t
+t/34_point_functions.t
 t/50_legacy.t
 t/51_legacy_wantarray.t
 t/60_legacy_after_returning.t
 t/61_legacy_after_throwing.t
-t/listenable.t
+t/70_listenable.t
+t/71_singleton.t
+t/72_wormhole.t
 t/rt_57417.t
-t/singleton.t
-t/wormhole.t
 xt/meta.t
 xt/pmv.t
 xt/pod.t

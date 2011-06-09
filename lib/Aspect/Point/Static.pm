@@ -5,7 +5,7 @@ use warnings;
 use Carp          ();
 use Aspect::Point ();
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 our @ISA     = 'Aspect::Point';
 
 
@@ -34,7 +34,7 @@ __END__
 
 =head1 NAME
 
-Aspect::Point - The Join Point context for join point static parts
+Aspect::Point::Static - The Join Point context for join point static parts
 
 =head1 DESCRIPTION
 

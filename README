@@ -784,7 +784,7 @@ FUNCTIONS
 
     For more information on writing reusable aspects, see Aspect::Library.
 
-POINTCUT OPERATORS
+OPERATORS
   &
     Overloading of bitwise "&" for pointcut declarations allows a natural
     looking boolean "and" logic for pointcuts. When using the "&" operator
@@ -826,7 +826,7 @@ POINTCUT OPERATORS
 
     For more information, see Aspect::Pointcut::Not.
 
-ADVICE METHODS
+METHODS
     A range of different methods are available within each type of advice
     code.
 

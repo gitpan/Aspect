@@ -455,7 +455,7 @@ use Aspect::Advice::Before      ();
 use Aspect::Point               ();
 use Aspect::Point::Static       ();
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 our %FLAGS   = ();
 
 # Track the location of exported functions so that pointcuts
@@ -1048,7 +1048,7 @@ sub _LIBRARY {
 
 =pod
 
-=head1 POINTCUT OPERATORS
+=head1 OPERATORS
 
 =head2 &
 
@@ -1091,7 +1091,7 @@ pointcut expression will match if the single subexpression does B<not> match.
 
 For more information, see L<Aspect::Pointcut::Not>.
 
-=head1 ADVICE METHODS
+=head1 METHODS
 
 A range of different methods are available within each type of advice code.
 
