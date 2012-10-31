@@ -1,14 +1,13 @@
 package Aspect::Pointcut::Cflow;
 
 use strict;
-use warnings;
 use Carp                   ();
 use Params::Util           ();
 use Aspect::Pointcut       ();
 use Aspect::Pointcut::Call ();
 use Aspect::Point::Static  ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Pointcut';
 
 use constant KEY  => 0;

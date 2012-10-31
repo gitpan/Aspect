@@ -427,7 +427,6 @@ declarator to the highest level declarator for enabling complete aspect classes.
 
 use 5.008002;
 use strict;
-use warnings;
 
 # Added by eilara as hack around caller() core dump
 # NOTE: Now we've switched to Sub::Uplevel can this be removed?
@@ -455,7 +454,7 @@ use Aspect::Advice::Before      ();
 use Aspect::Point               ();
 use Aspect::Point::Static       ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our %FLAGS   = ();
 
 # Track the location of exported functions so that pointcuts

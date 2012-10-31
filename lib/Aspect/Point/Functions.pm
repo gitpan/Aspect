@@ -41,11 +41,10 @@ It is considered unsupported at this time.
 =cut
 
 use strict;
-use warnings;
-use Aspect::Point ();
 use Exporter      ();
+use Aspect::Point ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Exporter';
 our @EXPORT  = qw{
 	type

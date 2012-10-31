@@ -1,14 +1,13 @@
 package Aspect::Library::Wormhole;
 
 use strict;
-use warnings;
 use Aspect::Modular         ();
 use Aspect::Advice::Before  ();
 use Aspect::Pointcut::And   ();
 use Aspect::Pointcut::Call  ();
 use Aspect::Pointcut::Cflow ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Modular';
 
 sub get_advice {

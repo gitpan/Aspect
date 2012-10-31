@@ -3,12 +3,11 @@ package Aspect::Pointcut::Logic;
 # A base class for logic pointcuts
 
 use strict;
-use warnings;
 use Carp             ();
 use Params::Util     ();
 use Aspect::Pointcut ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Pointcut';
 
 sub match_runtime {

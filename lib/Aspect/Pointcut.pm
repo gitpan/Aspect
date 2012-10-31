@@ -35,12 +35,11 @@ C<!>, C<&> and C<|>.
 =cut
 
 use strict;
-use warnings;
 use Aspect::Pointcut::Or  ();
 use Aspect::Pointcut::And ();
 use Aspect::Pointcut::Not ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 use overload (
 	# Keep traditional Perl boolification and stringification

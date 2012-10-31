@@ -1,11 +1,10 @@
 package Aspect::Library::Breakpoint;
 
 use strict;
-use warnings;
 use Aspect::Library        ();
 use Aspect::Advice::Before ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Library';
 
 sub get_advice {
@@ -53,7 +52,7 @@ Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2010 Adam Kennedy.
+Copyright 2010 - 2012 Adam Kennedy.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

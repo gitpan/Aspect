@@ -24,11 +24,10 @@ continue to function as normal.
 =cut
 
 use strict;
-use warnings;
 use Aspect   ();
 use Exporter ();
 
-our $VERSION   = '1.02';
+our $VERSION   = '1.03';
 our @ISA       = 'Exporter';
 our @EXPORT    = qw( aspect before after call cflow );
 our $INSTALLED = 0;

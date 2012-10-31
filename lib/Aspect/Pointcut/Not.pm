@@ -1,10 +1,9 @@
 package Aspect::Pointcut::Not;
 
 use strict;
-use warnings;
 use Aspect::Pointcut::Logic ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Pointcut::Logic';
 
 

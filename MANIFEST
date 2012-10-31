@@ -1,3 +1,4 @@
+benchmark/advice.pl
 Changes
 examples/Singleton/aop.pl
 examples/Singleton/oop.pl

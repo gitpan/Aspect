@@ -118,12 +118,11 @@ that eventually reached the get/set on C<Person>:
 =cut
 
 use strict;
-use warnings;
 use Carp                  ();
 use Sub::Uplevel          ();
 use Aspect::Point::Static ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 
 

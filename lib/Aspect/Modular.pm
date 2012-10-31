@@ -1,10 +1,9 @@
 package Aspect::Modular;
 
 use strict;
-use warnings;
 use Aspect::Library ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Library';
 
 sub new {

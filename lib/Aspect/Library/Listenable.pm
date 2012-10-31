@@ -4,7 +4,6 @@ package Aspect::Library::Listenable;
 # specifically instead of getting default (event), and event cloning
 
 use strict;
-use warnings;
 use Carp                               ();
 use Scalar::Util                       ();
 use Sub::Install                       ();
@@ -12,7 +11,7 @@ use Aspect::Modular                    ();
 use Aspect::Advice::Before             ();
 use Aspect::Library::Listenable::Event ();
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 our @ISA     = 'Aspect::Modular';
 
 sub import {
