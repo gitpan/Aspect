@@ -50,7 +50,6 @@ LICENSE
 Makefile.PL
 MANIFEST			This list of files
 META.yml
-MYMETA.json
 README
 t/00_closure.t
 t/00_context.t
